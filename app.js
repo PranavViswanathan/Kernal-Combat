@@ -373,4 +373,13 @@ if (typeof module !== 'undefined' && module.exports) {
         saveUserData,
         loadUserData
     };
+} else {
+    // Make functions globally available in browser
+    window.calculateComplexity = calculateComplexity;
+    window.calculateScore = calculateScore;
+    window.simulateBattle = simulateBattle;
+    window.generatePlayerSprite = generatePlayerSprite;
+    window.formatTime = formatTime;
+    window.saveUserData = saveUserData;
+    window.loadUserData = loadUserData;
 }

@@ -148,8 +148,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/javascript-hint.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/selection/active-line.min.js"></script>
 
-    <script src="problemLoader.js?v=2"></script>
-    <script src="app.js?v=2"></script>
+    <script src="problemLoader.js?v=3"></script>
+    <script src="app.js?v=3"></script>
     <script>
         let currentProblem = null;
         let startTime = Date.now();
@@ -498,18 +498,24 @@
         function parseInputToArgs(inputStr, functionName) {
             // Parse input string like "nums = [2,7,11,15], target = 9"
             // into arguments array
-            const assignments = inputStr.split(',').map(s => s.trim());
+            // Use regex to match "key = value" patterns, handling arrays and objects
             const args = [];
 
-            for (const assignment of assignments) {
-                const parts = assignment.split('=').map(s => s.trim());
-                if (parts.length === 2) {
-                    let value = parts[1];
-                    // Try to evaluate the value
-                    try {
-                        args.push(JSON.parse(value));
-                    } catch {
-                        // If not valid JSON, try to eval it
+            // Match patterns like "varName = value" where value can be arrays, objects, numbers, strings
+            const pattern = /(\w+)\s*=\s*(\[.*?\]|\{.*?\}|"[^"]*"|'[^']*'|[^,]+)/g;
+            let match;
+
+            while ((match = pattern.exec(inputStr)) !== null) {
+                const value = match[2].trim();
+                try {
+                    // Try to parse as JSON
+                    args.push(JSON.parse(value));
+                } catch {
+                    // If not valid JSON, try to evaluate it as a number or keep as string
+                    const numValue = Number(value);
+                    if (!isNaN(numValue)) {
+                        args.push(numValue);
+                    } else {
                         args.push(value);
                     }
                 }

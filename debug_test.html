@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Debug Two Sum Test</title>
+</head>
+
+<body>
+    <h1>Two Sum Test Debug</h1>
+    <pre id="output"></pre>
+
+    <script>
+        const output = document.getElementById('output');
+        let log = '';
+
+        function logLine(msg) {
+            log += msg + '\n';
+            output.textContent = log;
+        }
+
+        // Your code
+        function twoSum(nums, target) {
+            const map = new Map();
+            for (let i = 0; i < nums.length; i++) {
+                const complement = target - nums[i];
+                if (map.has(complement)) {
+                    return [map.get(complement), i];
+                }
+                map.set(nums[i], i);
+            }
+            return [];
+        }
+
+        // Test case from problem.json
+        const testCase = {
+            input: "nums = [2,7,11,15], target = 9",
+            output: "[0,1]"
+        };
+
+        // Parse input like the test runner does (FIXED VERSION)
+        function parseInputToArgs(inputStr) {
+            const args = [];
+
+            // Match patterns like "varName = value" where value can be arrays, objects, numbers, strings
+            const pattern = /(\w+)\s*=\s*(\[.*?\]|\{.*?\}|"[^"]*"|'[^']*'|[^,]+)/g;
+            let match;
+
+            while ((match = pattern.exec(inputStr)) !== null) {
+                const value = match[2].trim();
+                try {
+                    // Try to parse as JSON
+                    args.push(JSON.parse(value));
+                } catch {
+                    // If not valid JSON, try to evaluate it as a number or keep as string
+                    const numValue = Number(value);
+                    if (!isNaN(numValue)) {
+                        args.push(numValue);
+                    } else {
+                        args.push(value);
+                    }
+                }
+            }
+            return args;
+        }
+
+        const args = parseInputToArgs(testCase.input);
+        logLine('Parsed args: ' + JSON.stringify(args));
+
+        const result = twoSum(...args);
+        logLine('Function result: ' + JSON.stringify(result));
+        logLine('Result type: ' + typeof result);
+
+        const actualOutput = JSON.stringify(result);
+        logLine('Actual output (stringified): ' + actualOutput);
+        logLine('Actual output type: ' + typeof actualOutput);
+
+        const expectedOutput = testCase.output;
+        logLine('Expected output: ' + expectedOutput);
+        logLine('Expected output type: ' + typeof expectedOutput);
+
+        // Normalize function from solve.html
+        function normalizeOutput(output) {
+            if (typeof output === 'string') {
+                try {
+                    const parsed = JSON.parse(output);
+                    return JSON.stringify(parsed);
+                } catch {
+                    return output.trim();
+                }
+            }
+            return JSON.stringify(output);
+        }
+
+        const normalizedActual = normalizeOutput(actualOutput);
+        const normalizedExpected = normalizeOutput(expectedOutput);
+
+        logLine('\nNormalized actual: ' + normalizedActual);
+        logLine('Normalized expected: ' + normalizedExpected);
+        logLine('Are they equal? ' + (normalizedActual === normalizedExpected));
+        logLine('Strict comparison: ' + (normalizedActual === normalizedExpected ? 'PASS ✅' : 'FAIL ❌'));
+    </script>
+</body>
+
+</html>
