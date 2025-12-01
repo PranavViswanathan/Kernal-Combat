@@ -186,14 +186,14 @@ const PROBLEMS_DATA = {
 // ===================================
 
 function loadUserData() {
-    const savedUser = localStorage.getItem('codebattle_user');
+    const savedUser = localStorage.getItem('kernalcombat_user');
     if (savedUser) {
         APP_STATE.currentUser = JSON.parse(savedUser);
     }
 }
 
 function saveUserData() {
-    localStorage.setItem('codebattle_user', JSON.stringify(APP_STATE.currentUser));
+    localStorage.setItem('kernalcombat_user', JSON.stringify(APP_STATE.currentUser));
 }
 
 // ===================================

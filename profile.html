@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile - CodeBattle Terminal</title>
+    <title>User Profile - Kernal Combat Terminal</title>
     <meta name="description" content="View your coding stats and achievements">
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=VT323&display=swap"
@@ -137,7 +137,7 @@
     <script src="app.js"></script>
     <script>
         function loadProfile() {
-            const user = JSON.parse(localStorage.getItem('codebattle_user') || '{}');
+            const user = JSON.parse(localStorage.getItem('kernalcombat_user') || '{}');
 
             // Set defaults
             const username = user.username || 'Guest';
@@ -244,7 +244,7 @@
                 document.getElementById('profileUsername').textContent);
 
             if (newUsername && newUsername.trim()) {
-                const user = JSON.parse(localStorage.getItem('codebattle_user') || '{}');
+                const user = JSON.parse(localStorage.getItem('kernalcombat_user') || '{}');
                 user.username = newUsername.trim();
 
                 const avatars = ['👨‍💻', '👩‍💻', '🧑‍💻', '🦸', '🦹', '🥷', '🧙', '🧛'];
@@ -260,14 +260,14 @@
                     user.joinedDate = new Date().getFullYear();
                 }
 
-                localStorage.setItem('codebattle_user', JSON.stringify(user));
+                localStorage.setItem('kernalcombat_user', JSON.stringify(user));
                 loadProfile();
             }
         }
 
         function resetProfile() {
             if (confirm('Are you sure you want to reset your profile? This cannot be undone!')) {
-                localStorage.removeItem('codebattle_user');
+                localStorage.removeItem('kernalcombat_user');
                 localStorage.removeItem('solutions');
                 localStorage.removeItem('battleData');
                 alert('Profile reset!');

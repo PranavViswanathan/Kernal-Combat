@@ -1,21 +1,21 @@
-# CodeBattle Terminal 🎮
+# Kernal Combat Terminal
 
 A terminal-themed LeetCode-style coding platform with Pokemon-style battles! Built with vanilla HTML, CSS, and JavaScript.
 
 ## Features
 
-✅ **Terminal-Themed UI** - Retro terminal aesthetics with green glow effects  
-✅ **Dynamic Problem Loading** - Questions loaded from JSON files in folder structure  
-✅ **Code Editor** - Professional code editing with CodeMirror (syntax highlighting & autocomplete)  
-✅ **Solo Practice Mode** - Solve problems individually with test cases  
-✅ **Pair Battle Mode** - 2-player competitive coding  
-✅ **Pokemon-Style Battles** - Automated battles based on code quality metrics  
-✅ **Performance Metrics** - Time/space complexity analysis, lines of code, and solve time  
-✅ **User Profiles** - Track stats, achievements, and solution history  
-✅ **Test Cases** - Each problem includes multiple test cases  
-✅ **Hints System** - Built-in hints for each problem  
+- **Terminal-Themed UI** - Retro terminal aesthetics with green glow effects  
+- **Dynamic Problem Loading** - Questions loaded from JSON files in folder structure  
+- **Code Editor** - Professional code editing with CodeMirror (syntax highlighting & autocomplete)  
+- **Solo Practice Mode** - Solve problems individually with test cases  
+- **Pair Battle Mode** - 2-player competitive coding  
+- **Pokemon-Style Battles** - Automated battles based on code quality metrics  
+- **Performance Metrics** - Time/space complexity analysis, lines of code, and solve time  
+- **User Profiles** - Track stats, achievements, and solution history  
+- **Test Cases** - Each problem includes multiple test cases  
+- **Hints System** - Built-in hints for each problem  
 
-## 📁 Folder Structure
+## Folder Structure
 
 ```
 VsLeetcodeCodingWebsite/
@@ -50,7 +50,7 @@ VsLeetcodeCodingWebsite/
     └── [other topics]/
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Option 1: Simple Local Server
 
@@ -71,7 +71,7 @@ Then open http://localhost:8000 in your browser.
 
 Simply open `index.html` in your web browser. Note: Some browsers may restrict file:// protocol for loading JSON files, so a local server is recommended.
 
-## 📝 Adding New Problems
+## Adding New Problems
 
 Create a new problem by adding a folder and JSON file:
 
@@ -108,7 +108,7 @@ const PROBLEM_INDEX = {
 };
 ```
 
-## 🎮 How to Use
+## How to Use
 
 ### Solo Mode
 1. Click "Problem Archive" from the main menu
@@ -134,7 +134,7 @@ const PROBLEM_INDEX = {
 - **HP** = 1000 for both players
 - Winner determined by remaining HP
 
-## 🎨 Code Editor Features
+## Code Editor Features
 
 - **Syntax Highlighting** - JavaScript code highlighting via CodeMirror
 - **Autocomplete** - Press Ctrl+Space or Cmd+Space
@@ -143,7 +143,7 @@ const PROBLEM_INDEX = {
 - **Line Numbers** - Easy code navigation
 - **Starter Code** - Each problem includes a function template
 
-## 💾 Data Storage
+## Data Storage
 
 All data is stored in browser localStorage:
 - User profile and stats
@@ -151,14 +151,14 @@ All data is stored in browser localStorage:
 - Battle history
 - Code drafts (auto-saved)
 
-## 🏆 Achievements
+## Achievements
 
 - **First Steps** - Solve your first problem
 - **Battle Master** - Win your first battle
 - **Speed Demon** - Solve 10 problems
 - **Champion** - Win 10 battles
 
-## 🛠 Technologies Used
+## Technologies Used
 
 - **HTML5** - Structure
 - **CSS3** - Terminal-themed styling with animations
@@ -167,7 +167,7 @@ All data is stored in browser localStorage:
 - **LocalStorage API** - Data persistence
 - **Fetch API** - Dynamic problem loading
 
-## 📊 Performance Metrics
+## Performance Metrics
 
 The system analyzes your code for:
 - **Time Complexity** - Estimated Big O notation
@@ -175,7 +175,7 @@ The system analyzes your code for:
 - **Lines of Code** - Code conciseness
 - **Solve Time** - How long you took
 
-## 🎯 Future Enhancements
+## Future Enhancements
 
 - Add more problems (currently ~7 sample problems)
 - Backend integration for real user accounts
@@ -186,11 +186,11 @@ The system analyzes your code for:
 - Problem difficulty rating system
 - Solution submission and review
 
-## 📄 License
+## License
 
 This project is open source and available for educational purposes.
 
-## 🤝 Contributing
+## Contributing
 
 To add new problems:
 1. Follow the folder structure in `problems/`
@@ -199,4 +199,4 @@ To add new problems:
 
 ---
 
-**Made with 💚 in terminal green!**
+**Made with love in terminal green!**

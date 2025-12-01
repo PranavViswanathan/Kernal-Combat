@@ -107,6 +107,7 @@ function createPlaceholderProblem(topic, problemId) {
  */
 async function getProblems() {
     if (!LOADING_COMPLETE) {
+        console.log('Loading problems for the first time...');
         await loadAllProblems();
     }
     return PROBLEMS_CACHE;
@@ -116,10 +117,19 @@ async function getProblems() {
  * Get a specific problem by topic and ID
  */
 async function getProblem(topic, problemId) {
-    const problems = await getProblems();
-    if (problems[topic]) {
-        return problems[topic].find(p => p.id === problemId);
+    // Ensure problems are loaded first
+    if (!LOADING_COMPLETE) {
+        console.log('Waiting for problems to load...');
+        await loadAllProblems();
     }
+    
+    const problems = PROBLEMS_CACHE;
+    if (problems[topic]) {
+        const problem = problems[topic].find(p => p.id === problemId);
+        console.log(`Found problem: ${problemId}`, problem);
+        return problem;
+    }
+    console.warn(`Topic "${topic}" not found in cache`);
     return null;
 }
 

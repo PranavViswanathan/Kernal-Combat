@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokemon Battle! - CodeBattle Terminal</title>
+    <title>Pokemon Battle! - Kernal Combat Terminal</title>
     <meta name="description" content="Pokemon-style coding battle animation">
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=VT323&display=swap"
@@ -250,9 +250,9 @@
         }
 
         function updateWinnerStats() {
-            const user = JSON.parse(localStorage.getItem('codebattle_user') || '{"battlesWon": 0}');
+            const user = JSON.parse(localStorage.getItem('kernalcombat_user') || '{"battlesWon": 0}');
             user.battlesWon = (user.battlesWon || 0) + 1;
-            localStorage.setItem('codebattle_user', JSON.stringify(user));
+            localStorage.setItem('kernalcombat_user', JSON.stringify(user));
         }
 
         function formatTime(ms) {
