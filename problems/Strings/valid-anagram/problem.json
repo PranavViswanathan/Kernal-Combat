@@ -17,5 +17,10 @@
         "Count the frequency of each character",
         "Compare the character frequencies of both strings"
     ],
-    "starterCode": "function isAnagram(s, t) {\n    // Your code here\n}"
+    "starterCode": {
+        "javascript": "function isAnagram(s, t) {\n    // Your code here\n}",
+        "python": "def isAnagram(s, t):\n    # Your code here\n    pass",
+        "java": "class Solution {\n    public boolean isAnagram(String s, String t) {\n        // Your code here\n        return false;\n    }\n}",
+        "cpp": "#include <string>\nusing namespace std;\n\nclass Solution {\npublic:\n    bool isAnagram(string s, string t) {\n        // Your code here\n        return false;\n    }\n};"
+    }
 }

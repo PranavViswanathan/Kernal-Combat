@@ -24,5 +24,10 @@
     "Use a hash map to store numbers you've seen",
     "For each number, check if target - number exists in the map"
   ],
-  "starterCode": "function twoSum(nums, target) {\n    // Your code here\n}"
+  "starterCode": {
+    "javascript": "function twoSum(nums, target) {\n    // Your code here\n}",
+    "python": "def twoSum(nums, target):\n    # Your code here\n    pass",
+    "java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        // Your code here\n        return new int[]{};\n    }\n}",
+    "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        // Your code here\n        return {};\n    }\n};"
+  }
 }

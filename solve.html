@@ -86,6 +86,13 @@
                 <div class="editor-panel">
                     <div class="panel-header">
                         💻 Code Editor
+                        <select id="languageSelector" onchange="changeLanguage()"
+                            style="margin-left: 20px; background: var(--terminal-bg); color: var(--accent-primary); border: 1px solid var(--terminal-border); padding: 5px 10px; border-radius: 4px; font-family: 'Fira Code', monospace; cursor: pointer;">
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="java">Java</option>
+                            <option value="cpp">C++</option>
+                        </select>
                         <span style="margin-left: auto; font-size: 12px; color: var(--terminal-text-dim);">
                             Time: <span id="timer">0:00</span>
                         </span>
@@ -133,6 +140,8 @@
     <!-- CodeMirror JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.js"></script>
@@ -146,6 +155,15 @@
         let startTime = Date.now();
         let timerInterval = null;
         let codeEditor = null;
+        let currentLanguage = localStorage.getItem('selectedLanguage') || 'javascript';
+
+        // Language configuration
+        const LANGUAGE_CONFIG = {
+            javascript: { mode: 'javascript', extension: 'js', icon: '🟨' },
+            python: { mode: 'python', extension: 'py', icon: '🐍' },
+            java: { mode: 'text/x-java', extension: 'java', icon: '☕' },
+            cpp: { mode: 'text/x-c++src', extension: 'cpp', icon: '⚙️' }
+        };
 
         function getDifficultyClass(difficulty) {
             return `difficulty-${difficulty}`;
@@ -259,16 +277,32 @@
 
             console.log('Current problem:', currentProblem);
 
+            // Set language selector
+            const languageSelector = document.getElementById('languageSelector');
+            if (languageSelector) {
+                languageSelector.value = currentLanguage;
+            }
+
             // Load saved code or use starter code
-            const savedCode = localStorage.getItem(`code_${currentProblem.id}`);
-            const initialCode = savedCode || currentProblem.starterCode || '// Write your solution here\n\nfunction solution() {\n    // Your code here\n}';
+            const savedCode = localStorage.getItem(`code_${currentProblem.id}_${currentLanguage}`);
+            let initialCode = savedCode;
+
+            if (!savedCode) {
+                // Get starter code for current language
+                if (typeof currentProblem.starterCode === 'object' && currentProblem.starterCode !== null) {
+                    initialCode = currentProblem.starterCode[currentLanguage] || getDefaultStarterCode(currentLanguage);
+                } else {
+                    // Fallback for old format
+                    initialCode = currentProblem.starterCode || getDefaultStarterCode(currentLanguage);
+                }
+            }
 
             console.log('Initial code length:', initialCode.length);
 
             try {
                 codeEditor = CodeMirror(editorDiv, {
                     value: initialCode,
-                    mode: 'javascript',
+                    mode: LANGUAGE_CONFIG[currentLanguage].mode,
                     theme: 'dracula',
                     lineNumbers: true,
                     autoCloseBrackets: true,
@@ -287,7 +321,7 @@
 
                 // Auto-save code on change
                 codeEditor.on('change', () => {
-                    localStorage.setItem(`code_${currentProblem.id}`, codeEditor.getValue());
+                    localStorage.setItem(`code_${currentProblem.id}_${currentLanguage}`, codeEditor.getValue());
                     updateLineCount();
                 });
 
@@ -298,25 +332,245 @@
             }
         }
 
+        function getDefaultStarterCode(language) {
+            const templates = {
+                javascript: '// Write your solution here\n\nfunction solution() {\n    // Your code here\n}',
+                python: '# Write your solution here\n\ndef solution():\n    # Your code here\n    pass',
+                java: '// Write your solution here\n\nclass Solution {\n    public void solution() {\n        // Your code here\n    }\n}',
+                cpp: '// Write your solution here\n\n#include <iostream>\nusing namespace std;\n\nvoid solution() {\n    // Your code here\n}'
+            };
+            return templates[language] || templates.javascript;
+        }
+
+        function changeLanguage() {
+            const languageSelector = document.getElementById('languageSelector');
+            const newLanguage = languageSelector.value;
+
+            if (newLanguage === currentLanguage) return;
+
+            // Save current code before switching
+            if (codeEditor && currentProblem) {
+                localStorage.setItem(`code_${currentProblem.id}_${currentLanguage}`, codeEditor.getValue());
+            }
+
+            currentLanguage = newLanguage;
+            localStorage.setItem('selectedLanguage', newLanguage);
+
+            // Get starter code for new language
+            const savedCode = localStorage.getItem(`code_${currentProblem.id}_${currentLanguage}`);
+            let newCode = savedCode;
+
+            if (!savedCode) {
+                if (typeof currentProblem.starterCode === 'object' && currentProblem.starterCode !== null) {
+                    newCode = currentProblem.starterCode[currentLanguage] || getDefaultStarterCode(currentLanguage);
+                } else {
+                    newCode = getDefaultStarterCode(currentLanguage);
+                }
+            }
+
+            // Update CodeMirror mode and value
+            codeEditor.setOption('mode', LANGUAGE_CONFIG[currentLanguage].mode);
+            codeEditor.setValue(newCode);
+        }
+
         function runCode() {
             if (!codeEditor) return;
 
             const code = codeEditor.getValue();
             const resultsDiv = document.getElementById('results');
 
-            // Save code
-            localStorage.setItem(`code_${currentProblem.id}`, code);
+            // Only JavaScript can execute client-side
+            if (currentLanguage !== 'javascript') {
+                resultsDiv.innerHTML = `
+                    <div class="test-case failed">
+                        <div class="test-label">⚠️ Language Not Supported for Execution</div>
+                        <p style="color: var(--terminal-text-dim);">
+                            Currently, only JavaScript can execute in the browser. 
+                            Python, Java, and C++ require a backend server.
+                        </p>
+                    </div>
+                `;
+                return;
+            }
 
-            // Simulate test execution
+            // Save code
+            localStorage.setItem(`code_${currentProblem.id}_${currentLanguage}`, code);
+
+            // Show running state
             resultsDiv.innerHTML = '<p class="info-line"><span class="prompt">$</span> Running tests...</p>';
 
+            // Execute tests after a brief delay to show the "running" message
             setTimeout(() => {
-                const passed = Math.random() > 0.3; // Simulate pass/fail
-                const metrics = calculateComplexity(code);
+                try {
+                    const testResults = executeJavaScriptTests(code, currentProblem.testCases);
+                    displayTestResults(testResults);
+                } catch (error) {
+                    resultsDiv.innerHTML = `
+                        <div class="test-case failed">
+                            <div class="test-label">❌ Execution Error</div>
+                            <pre style="color: var(--error); margin-top: 10px;">${error.message}</pre>
+                        </div>
+                    `;
+                }
+            }, 500);
+        }
 
-                resultsDiv.innerHTML = `
-                    <div class="test-case ${passed ? 'passed' : 'failed'}">
-                        <div class="test-label">${passed ? '✅ All Tests Passed!' : '❌ Some Tests Failed'}</div>
+        function executeJavaScriptTests(code, testCases) {
+            const results = [];
+            let allPassed = true;
+
+            // Extract function name from code (look for function declarations)
+            const functionMatch = code.match(/function\s+(\w+)\s*\(/);
+            if (!functionMatch) {
+                throw new Error('No function found in your code. Please define a function.');
+            }
+            const functionName = functionMatch[1];
+
+            // Create a safe execution context
+            for (let i = 0; i < testCases.length; i++) {
+                const testCase = testCases[i];
+                const startTime = performance.now();
+
+                try {
+                    // Parse input - handle different formats
+                    const inputStr = testCase.input;
+                    const expectedOutput = testCase.output;
+
+                    // Create function in isolated scope and execute
+                    const evalCode = `
+                        ${code}
+                        
+                        // Parse input
+                        ${parseInputToArgs(inputStr, functionName)}
+                        
+                        // Execute function
+                        const result = ${functionName}(...args);
+                        
+                        // Return result
+                        JSON.stringify(result);
+                    `;
+
+                    const actualOutput = eval(evalCode);
+                    const endTime = performance.now();
+                    const executionTime = (endTime - startTime).toFixed(2);
+
+                    // Compare outputs
+                    const passed = normalizeOutput(actualOutput) === normalizeOutput(expectedOutput);
+
+                    if (!passed) allPassed = false;
+
+                    results.push({
+                        testNumber: i + 1,
+                        input: inputStr,
+                        expected: expectedOutput,
+                        actual: actualOutput,
+                        passed: passed,
+                        executionTime: executionTime,
+                        explanation: testCase.explanation
+                    });
+
+                } catch (error) {
+                    allPassed = false;
+                    const endTime = performance.now();
+                    const executionTime = (endTime - startTime).toFixed(2);
+
+                    results.push({
+                        testNumber: i + 1,
+                        input: testCase.input,
+                        expected: testCase.output,
+                        actual: null,
+                        passed: false,
+                        error: error.message,
+                        executionTime: executionTime,
+                        explanation: testCase.explanation
+                    });
+                }
+            }
+
+            return {
+                allPassed: allPassed,
+                results: results,
+                passedCount: results.filter(r => r.passed).length,
+                totalCount: results.length
+            };
+        }
+
+        function parseInputToArgs(inputStr, functionName) {
+            // Parse input string like "nums = [2,7,11,15], target = 9"
+            // into arguments array
+            const assignments = inputStr.split(',').map(s => s.trim());
+            const args = [];
+
+            for (const assignment of assignments) {
+                const parts = assignment.split('=').map(s => s.trim());
+                if (parts.length === 2) {
+                    let value = parts[1];
+                    // Try to evaluate the value
+                    try {
+                        args.push(JSON.parse(value));
+                    } catch {
+                        // If not valid JSON, try to eval it
+                        args.push(value);
+                    }
+                }
+            }
+
+            return `const args = ${JSON.stringify(args)};`;
+        }
+
+        function normalizeOutput(output) {
+            // Normalize output for comparison
+            if (typeof output === 'string') {
+                try {
+                    // Try to parse as JSON for comparison
+                    const parsed = JSON.parse(output);
+                    return JSON.stringify(parsed);
+                } catch {
+                    return output.trim();
+                }
+            }
+            return JSON.stringify(output);
+        }
+
+        function displayTestResults(testResults) {
+            const resultsDiv = document.getElementById('results');
+            const { allPassed, results, passedCount, totalCount } = testResults;
+
+            let html = `
+                <div class="test-case ${allPassed ? 'passed' : 'failed'}">
+                    <div class="test-label">
+                        ${allPassed ? '✅ All Tests Passed!' : `❌ ${passedCount}/${totalCount} Tests Passed`}
+                    </div>
+                </div>
+            `;
+
+            // Add individual test results
+            results.forEach(result => {
+                const statusIcon = result.passed ? '✅' : '❌';
+                const statusClass = result.passed ? 'passed' : 'failed';
+
+                html += `
+                    <div class="test-case ${statusClass}" style="margin-top: 15px;">
+                        <div class="test-label">${statusIcon} Test Case ${result.testNumber}</div>
+                        <div class="test-result">
+                            <div><strong>Input:</strong> ${escapeHtml(result.input)}</div>
+                            <div><strong>Expected:</strong> ${escapeHtml(result.expected)}</div>
+                            <div><strong>Actual:</strong> ${result.error ? `<span class="error">Error: ${escapeHtml(result.error)}</span>` : escapeHtml(result.actual || 'null')}</div>
+                            <div style="color: var(--terminal-text-dim); margin-top: 5px;">
+                                ⏱️ Execution Time: ${result.executionTime}ms
+                            </div>
+                            ${result.explanation ? `<div style="margin-top: 5px; color: var(--terminal-text-dim);"><em>${escapeHtml(result.explanation)}</em></div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Add code metrics if all passed
+            if (allPassed) {
+                const metrics = calculateComplexity(codeEditor.getValue());
+                html += `
+                    <div class="test-case" style="margin-top: 15px; border-color: var(--accent-secondary);">
+                        <div class="test-label">📊 Code Metrics</div>
                         <div class="test-result">
                             <div><strong>Time Complexity:</strong> ${metrics.timeComplexity}</div>
                             <div><strong>Space Complexity:</strong> ${metrics.spaceComplexity}</div>
@@ -324,7 +578,16 @@
                         </div>
                     </div>
                 `;
-            }, 1000);
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            if (text === null || text === undefined) return 'null';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
         }
 
         function submitSolution() {
@@ -341,10 +604,11 @@
             const metrics = calculateComplexity(code);
             const score = calculateScore(metrics, timeTaken);
 
-            // Save solution
+            // Save solution with language info
             const solutions = JSON.parse(localStorage.getItem('solutions') || '{}');
             solutions[currentProblem.id] = {
                 code,
+                language: currentLanguage,
                 metrics,
                 timeTaken,
                 score,

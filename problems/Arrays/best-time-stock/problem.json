@@ -19,5 +19,10 @@
         "Keep track of the minimum price seen so far",
         "Calculate profit if selling at current price"
     ],
-    "starterCode": "function maxProfit(prices) {\n    // Your code here\n}"
+    "starterCode": {
+        "javascript": "function maxProfit(prices) {\n    // Your code here\n}",
+        "python": "def maxProfit(prices):\n    # Your code here\n    pass",
+        "java": "class Solution {\n    public int maxProfit(int[] prices) {\n        // Your code here\n        return 0;\n    }\n}",
+        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int maxProfit(vector<int>& prices) {\n        // Your code here\n        return 0;\n    }\n};"
+    }
 }
