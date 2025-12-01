@@ -185,11 +185,7 @@ The system analyzes your code for:
 - Real-time multiplayer battles
 - Problem difficulty rating system
 - Solution submission and review
-
-## License
-
-This project is open source and available for educational purposes.
-
+- 
 ## Contributing
 
 To add new problems:
@@ -198,5 +194,3 @@ To add new problems:
 3. Update the `PROBLEM_INDEX` in `problemLoader.js`
 
 ---
-
-**Made with love in terminal green!**
