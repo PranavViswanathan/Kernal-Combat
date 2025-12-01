@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pair Battle Mode - CodeBattle Terminal</title>
+    <meta name="description" content="Two players compete in coding battle">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=VT323&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <span class="terminal-button close"></span>
+                <span class="terminal-button minimize"></span>
+                <span class="terminal-button maximize"></span>
+            </div>
+            <div class="terminal-title">
+                <span class="blink">█</span> Pair Battle Mode ⚔️
+            </div>
+            <div class="terminal-actions">
+                <button class="terminal-btn" onclick="navigateTo('index.html')">
+                    <span class="icon">🏠</span> Home
+                </button>
+            </div>
+        </div>
+
+        <div class="terminal-body">
+            <!-- Setup Screen -->
+            <div id="setupScreen">
+                <h1 class="section-title">&gt; BATTLE SETUP</h1>
+
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <div class="editor-panel mb-20">
+                        <div class="panel-header">👥 Player Names</div>
+                        <div class="panel-content">
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; color: var(--terminal-text-dim);">
+                                    Player 1 Name:
+                                </label>
+                                <input type="text" id="player1Name" placeholder="Enter player 1 name..." style="width: 100%; padding: 10px; background: var(--terminal-bg); 
+                                              border: 1px solid var(--terminal-border); color: var(--terminal-text); 
+                                              font-family: var(--font-mono); border-radius: 4px;">
+                            </div>
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; color: var(--terminal-text-dim);">
+                                    Player 2 Name:
+                                </label>
+                                <input type="text" id="player2Name" placeholder="Enter player 2 name..." style="width: 100%; padding: 10px; background: var(--terminal-bg); 
+                                              border: 1px solid var(--terminal-border); color: var(--terminal-text); 
+                                              font-family: var(--font-mono); border-radius: 4px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="editor-panel">
+                        <div class="panel-header">📝 Select Problem</div>
+                        <div class="panel-content">
+                            <select id="problemSelect" style="width: 100%; padding: 10px; background: var(--terminal-bg); 
+                                           border: 1px solid var(--terminal-border); color: var(--terminal-text); 
+                                           font-family: var(--font-mono); border-radius: 4px;">
+                                <option value="">-- Select a problem --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="startBattle()"
+                        style="width: 100%; margin-top: 20px; padding: 15px; font-size: 16px;">
+                        ⚔️ START BATTLE
+                    </button>
+                </div>
+            </div>
+
+            <!-- Battle Screen -->
+            <div id="battleScreen" style="display: none;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="color: var(--terminal-text-bright);">
+                        <span id="p1NameDisplay">Player 1</span> VS <span id="p2NameDisplay">Player 2</span>
+                    </h2>
+                    <p style="color: var(--terminal-text-dim);" id="problemNameDisplay">Problem</p>
+                </div>
+
+                <div class="editor-container">
+                    <!-- Player 1 Editor -->
+                    <div class="editor-panel">
+                        <div class="panel-header">
+                            👤 <span id="p1Header">Player 1</span>
+                            <span style="margin-left: auto; font-size: 12px; color: var(--terminal-text-dim);">
+                                Time: <span id="p1Timer">0:00</span>
+                            </span>
+                        </div>
+                        <div class="panel-content" style="padding: 0;">
+                            <textarea id="p1Editor" class="code-editor"
+                                placeholder="// Player 1 - Write your solution here..."></textarea>
+                        </div>
+                        <div style="padding: 16px; border-top: 1px solid var(--terminal-border);">
+                            <button class="btn btn-primary" onclick="submitPlayer1()" style="width: 100%;">
+                                ✅ Player 1 Submit
+                            </button>
+                            <div style="margin-top: 10px; font-size: 12px; color: var(--terminal-text-dim);">
+                                Lines: <span id="p1Lines">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Player 2 Editor -->
+                    <div class="editor-panel">
+                        <div class="panel-header">
+                            👤 <span id="p2Header">Player 2</span>
+                            <span style="margin-left: auto; font-size: 12px; color: var(--terminal-text-dim);">
+                                Time: <span id="p2Timer">0:00</span>
+                            </span>
+                        </div>
+                        <div class="panel-content" style="padding: 0;">
+                            <textarea id="p2Editor" class="code-editor"
+                                placeholder="// Player 2 - Write your solution here..."></textarea>
+                        </div>
+                        <div style="padding: 16px; border-top: 1px solid var(--terminal-border);">
+                            <button class="btn btn-primary" onclick="submitPlayer2()" style="width: 100%;">
+                                ✅ Player 2 Submit
+                            </button>
+                            <div style="margin-top: 10px; font-size: 12px; color: var(--terminal-text-dim);">
+                                Lines: <span id="p2Lines">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="editor-panel mt-20">
+                    <div class="panel-header">📝 Problem Description</div>
+                    <div class="panel-content" id="battleProblemDesc"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="terminal-footer">
+            <div class="status-bar">
+                <span class="status-item">
+                    <span class="status-dot active"></span> BATTLE MODE
+                </span>
+                <span class="status-item">
+                    STATUS: <span id="battleStatus">Setup</span>
+                </span>
+                <span class="status-item">
+                    TIME: <span id="currentTime"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <script src="problemLoader.js"></script>
+    <script src="app.js"></script>
+    <script>
+        let battleState = {
+            player1: { name: '', code: '', submitted: false, startTime: 0, endTime: 0 },
+            player2: { name: '', code: '', submitted: false, startTime: 0, endTime: 0 },
+            problem: null,
+            p1TimerInterval: null,
+            p2TimerInterval: null
+        };
+
+        async function populateProblemSelect() {
+            const select = document.getElementById('problemSelect');
+
+            const problems = await getProblems();
+
+            Object.keys(problems).forEach(topic => {
+                problems[topic].forEach(problem => {
+                    const option = document.createElement('option');
+                    option.value = JSON.stringify({ topic, problem });
+                    option.textContent = `${topic} - ${problem.name} (${problem.difficulty})`;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        function startBattle() {
+            const p1Name = document.getElementById('player1Name').value.trim();
+            const p2Name = document.getElementById('player2Name').value.trim();
+            const problemData = document.getElementById('problemSelect').value;
+
+            if (!p1Name || !p2Name) {
+                alert('Please enter names for both players!');
+                return;
+            }
+
+            if (!problemData) {
+                alert('Please select a problem!');
+                return;
+            }
+
+            const { topic, problem } = JSON.parse(problemData);
+
+            battleState.player1.name = p1Name;
+            battleState.player2.name = p2Name;
+            battleState.problem = problem;
+
+            // Update UI
+            document.getElementById('p1NameDisplay').textContent = p1Name;
+            document.getElementById('p2NameDisplay').textContent = p2Name;
+            document.getElementById('p1Header').textContent = p1Name;
+            document.getElementById('p2Header').textContent = p2Name;
+            document.getElementById('problemNameDisplay').textContent = problem.name;
+
+            // Show problem description
+            const descDiv = document.getElementById('battleProblemDesc');
+            descDiv.innerHTML = `
+                <h3 style="color: var(--terminal-text-bright); margin-bottom: 10px;">${problem.name}</h3>
+                <span class="problem-difficulty ${getDifficultyClass(problem.difficulty)}">${problem.difficulty.toUpperCase()}</span>
+                <p style="margin-top: 15px; line-height: 1.8;">${problem.description}</p>
+                <h4 style="margin-top: 20px; color: var(--terminal-text-bright);">Test Cases:</h4>
+                ${problem.testCases.map((tc, idx) => `
+                    <div class="test-case" style="margin: 10px 0;">
+                        <div class="test-label">Test ${idx + 1}:</div>
+                        <div>Input: ${tc.input}</div>
+                        <div>Output: ${tc.output}</div>
+                    </div>
+                `).join('')}
+            `;
+
+            // Switch screens
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('battleScreen').style.display = 'block';
+            document.getElementById('battleStatus').textContent = 'In Progress';
+
+            // Start timers
+            battleState.player1.startTime = Date.now();
+            battleState.player2.startTime = Date.now();
+
+            battleState.p1TimerInterval = setInterval(() => updatePlayerTimer('p1'), 1000);
+            battleState.p2TimerInterval = setInterval(() => updatePlayerTimer('p2'), 1000);
+
+            // Line counters
+            document.getElementById('p1Editor').addEventListener('input', () => {
+                const lines = document.getElementById('p1Editor').value.split('\n').length;
+                document.getElementById('p1Lines').textContent = lines;
+            });
+
+            document.getElementById('p2Editor').addEventListener('input', () => {
+                const lines = document.getElementById('p2Editor').value.split('\n').length;
+                document.getElementById('p2Lines').textContent = lines;
+            });
+        }
+
+        function updatePlayerTimer(player) {
+            const elapsed = Date.now() - battleState[`player${player === 'p1' ? 1 : 2}`].startTime;
+            const seconds = Math.floor(elapsed / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            document.getElementById(`${player}Timer`).textContent =
+                `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function submitPlayer1() {
+            if (battleState.player1.submitted) {
+                alert('Player 1 already submitted!');
+                return;
+            }
+
+            const code = document.getElementById('p1Editor').value;
+            if (!code.trim()) {
+                alert('Please write some code first!');
+                return;
+            }
+
+            battleState.player1.code = code;
+            battleState.player1.endTime = Date.now();
+            battleState.player1.submitted = true;
+
+            clearInterval(battleState.p1TimerInterval);
+
+            alert('Player 1 submitted!');
+            checkBothSubmitted();
+        }
+
+        function submitPlayer2() {
+            if (battleState.player2.submitted) {
+                alert('Player 2 already submitted!');
+                return;
+            }
+
+            const code = document.getElementById('p2Editor').value;
+            if (!code.trim()) {
+                alert('Please write some code first!');
+                return;
+            }
+
+            battleState.player2.code = code;
+            battleState.player2.endTime = Date.now();
+            battleState.player2.submitted = true;
+
+            clearInterval(battleState.p2TimerInterval);
+
+            alert('Player 2 submitted!');
+            checkBothSubmitted();
+        }
+
+        function checkBothSubmitted() {
+            if (battleState.player1.submitted && battleState.player2.submitted) {
+                // Calculate metrics for both players
+                const p1Metrics = calculateComplexity(battleState.player1.code);
+                const p1Time = battleState.player1.endTime - battleState.player1.startTime;
+                const p1Score = calculateScore(p1Metrics, p1Time);
+
+                const p2Metrics = calculateComplexity(battleState.player2.code);
+                const p2Time = battleState.player2.endTime - battleState.player2.startTime;
+                const p2Score = calculateScore(p2Metrics, p2Time);
+
+                // Store battle data
+                localStorage.setItem('battleData', JSON.stringify({
+                    player1: {
+                        name: battleState.player1.name,
+                        metrics: p1Metrics,
+                        score: p1Score,
+                        timeTaken: p1Time
+                    },
+                    player2: {
+                        name: battleState.player2.name,
+                        metrics: p2Metrics,
+                        score: p2Score,
+                        timeTaken: p2Time
+                    }
+                }));
+
+                // Navigate to battle page
+                setTimeout(() => {
+                    window.location.href = 'battle.html';
+                }, 1000);
+            }
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+
+        window.addEventListener('load', async () => {
+            await populateProblemSelect();
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+    </script>
+</body>
+
+</html>

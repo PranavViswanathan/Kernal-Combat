@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Battle! - CodeBattle Terminal</title>
+    <meta name="description" content="Pokemon-style coding battle animation">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=VT323&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <span class="terminal-button close"></span>
+                <span class="terminal-button minimize"></span>
+                <span class="terminal-button maximize"></span>
+            </div>
+            <div class="terminal-title">
+                <span class="blink">█</span> Battle Arena 🎮
+            </div>
+        </div>
+
+        <div class="terminal-body">
+            <div class="battle-arena">
+                <h1 class="section-title" style="text-align: center; font-size: 28px;">
+                    ⚔️ CODE BATTLE ⚔️
+                </h1>
+
+                <div class="battle-stage">
+                    <!-- Player 1 -->
+                    <div class="battle-player">
+                        <div class="player-sprite">
+                            <div style="font-size: 120px; text-align: center;" id="p1Sprite">🦖</div>
+                        </div>
+                        <div class="player-name" id="p1Name">Player 1</div>
+
+                        <div class="health-bar-container">
+                            <div class="health-bar">
+                                <div class="health-fill" id="p1HealthFill" style="width: 100%;"></div>
+                                <div class="health-text" id="p1HealthText">1000/1000</div>
+                            </div>
+                        </div>
+
+                        <div class="player-stats">
+                            <div class="stat-bar">
+                                <div class="stat-name">Score</div>
+                                <div class="stat-value" id="p1Score">0</div>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-name">Time Complexity</div>
+                                <div class="stat-value" id="p1TimeComp">O(n)</div>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-name">Space Complexity</div>
+                                <div class="stat-value" id="p1SpaceComp">O(1)</div>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-name">Lines of Code</div>
+                                <div class="stat-value" id="p1Lines">0</div>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-name">Time Taken</div>
+                                <div class="stat-value" id="p1Time">0s</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VS -->
+                    <div class="battle-vs">VS</div>
+
+                    <!-- Player 2 -->
+                    <div class="battle-player">
+                        <div class="player-sprite">
+                            <div style="font-size: 120px; text-align: center;" id="p2Sprite">🐉</div>
+                        </div>
+                        <div class="player-name" id="p2Name">Player 2</div>
+
+                        <div class="health-bar-container">
+                            <div class="health-bar">
+                                <div class="health-fill" id="p2HealthFill" style="width: 100%;"></div>
+                                <div class="health-text" id="p2HealthText">1000/1000</div>
+                            </div>
+                        </div>
+
+                        <div class="player-stats">
+                            <div class="stat-bar">
+                                <div class="stat-name">Score</div>
+                                <div class="stat-value" id="p2Score">0</div>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-name">Time Complexity</div>
+                                <div class="stat-value" id="p2TimeComp">O(n)</div>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-name">Space Complexity</div>
+                                <div class="stat-value" id="p2SpaceComp">O(1)</div>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-name">Lines of Code</div>
+                                <div class="stat-value" id="p2Lines">0</div>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-name">Time Taken</div>
+                                <div class="stat-value" id="p2Time">0s</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Battle Log -->
+                <div class="battle-log" id="battleLog">
+                    <div style="text-align: center; color: var(--terminal-text-dim);">
+                        <p>⚡ Calculating battle results...</p>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-primary" onclick="navigateTo('pair-mode.html')" style="padding: 12px 30px;">
+                        🔄 New Battle
+                    </button>
+                    <button class="btn" onclick="navigateTo('index.html')"
+                        style="padding: 12px 30px; margin-left: 10px;">
+                        🏠 Home
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="terminal-footer">
+            <div class="status-bar">
+                <span class="status-item">
+                    <span class="status-dot active"></span> BATTLE
+                </span>
+                <span class="status-item">
+                    WINNER: <span id="winnerName" style="color: var(--accent-warning);">TBD</span>
+                </span>
+                <span class="status-item">
+                    TIME: <span id="currentTime"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let battleResult = null;
+
+        function loadBattleData() {
+            const battleData = localStorage.getItem('battleData');
+            if (!battleData) {
+                alert('No battle data found!');
+                window.location.href = 'pair-mode.html';
+                return;
+            }
+
+            const data = JSON.parse(battleData);
+
+            // Set player names
+            document.getElementById('p1Name').textContent = data.player1.name;
+            document.getElementById('p2Name').textContent = data.player2.name;
+
+            // Set stats
+            document.getElementById('p1Score').textContent = Math.floor(data.player1.score);
+            document.getElementById('p1TimeComp').textContent = data.player1.metrics.timeComplexity;
+            document.getElementById('p1SpaceComp').textContent = data.player1.metrics.spaceComplexity;
+            document.getElementById('p1Lines').textContent = data.player1.metrics.lines;
+            document.getElementById('p1Time').textContent = formatTime(data.player1.timeTaken);
+
+            document.getElementById('p2Score').textContent = Math.floor(data.player2.score);
+            document.getElementById('p2TimeComp').textContent = data.player2.metrics.timeComplexity;
+            document.getElementById('p2SpaceComp').textContent = data.player2.metrics.spaceComplexity;
+            document.getElementById('p2Lines').textContent = data.player2.metrics.lines;
+            document.getElementById('p2Time').textContent = formatTime(data.player2.timeTaken);
+
+            // Run battle simulation
+            battleResult = simulateBattle(data.player1, data.player2);
+
+            // Set sprites based on winner
+            const p1IsWinner = battleResult.winner === data.player1.name;
+            document.getElementById('p1Sprite').textContent = generatePlayerSprite(data.player1.name, p1IsWinner);
+            document.getElementById('p2Sprite').textContent = generatePlayerSprite(data.player2.name, !p1IsWinner);
+
+            // Update winner
+            document.getElementById('winnerName').textContent = battleResult.winner;
+
+            // Animate battle
+            animateBattle();
+        }
+
+        function animateBattle() {
+            const battleLog = document.getElementById('battleLog');
+            battleLog.innerHTML = '';
+
+            let messageIndex = 0;
+            const messages = battleResult.battleLog;
+
+            function showNextMessage() {
+                if (messageIndex < messages.length) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'battle-message';
+                    messageDiv.textContent = messages[messageIndex];
+                    battleLog.appendChild(messageDiv);
+
+                    // Scroll to bottom
+                    battleLog.scrollTop = battleLog.scrollHeight;
+
+                    // Update health bars based on message content
+                    if (messages[messageIndex].includes('attacks')) {
+                        updateHealthBars();
+                    }
+
+                    messageIndex++;
+                    setTimeout(showNextMessage, 800);
+                } else {
+                    // Battle finished - show final health
+                    updateHealthBars(true);
+                }
+            }
+
+            setTimeout(showNextMessage, 500);
+        }
+
+        function updateHealthBars(final = false) {
+            if (!battleResult) return;
+
+            const p1Percent = final ? (battleResult.p1FinalHP / battleResult.p1MaxHP) * 100 : Math.random() * 30 + 50;
+            const p2Percent = final ? (battleResult.p2FinalHP / battleResult.p2MaxHP) * 100 : Math.random() * 30 + 50;
+
+            if (final) {
+                document.getElementById('p1HealthFill').style.width = p1Percent + '%';
+                document.getElementById('p1HealthText').textContent =
+                    `${battleResult.p1FinalHP}/${battleResult.p1MaxHP}`;
+
+                document.getElementById('p2HealthFill').style.width = p2Percent + '%';
+                document.getElementById('p2HealthText').textContent =
+                    `${battleResult.p2FinalHP}/${battleResult.p2MaxHP}`;
+
+                // Apply glitch effect to loser
+                const loserSprite = battleResult.winner === document.getElementById('p1Name').textContent ?
+                    'p2Sprite' : 'p1Sprite';
+                document.getElementById(loserSprite).classList.add('glitch');
+
+                // Update user stats if winner
+                updateWinnerStats();
+            }
+        }
+
+        function updateWinnerStats() {
+            const user = JSON.parse(localStorage.getItem('codebattle_user') || '{"battlesWon": 0}');
+            user.battlesWon = (user.battlesWon || 0) + 1;
+            localStorage.setItem('codebattle_user', JSON.stringify(user));
+        }
+
+        function formatTime(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+
+            if (minutes > 0) {
+                return `${minutes}m ${remainingSeconds}s`;
+            }
+            return `${remainingSeconds}s`;
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+
+        window.addEventListener('load', () => {
+            loadBattleData();
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+    </script>
+</body>
+
+</html>

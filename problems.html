@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem Archive - CodeBattle Terminal</title>
+    <meta name="description" content="Browse coding problems organized by topics">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=VT323&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <span class="terminal-button close"></span>
+                <span class="terminal-button minimize"></span>
+                <span class="terminal-button maximize"></span>
+            </div>
+            <div class="terminal-title">
+                <span class="blink">█</span> Problem Archive
+            </div>
+            <div class="terminal-actions">
+                <button class="terminal-btn" onclick="navigateTo('index.html')">
+                    <span class="icon">🏠</span> Home
+                </button>
+                <button class="terminal-btn" onclick="navigateTo('profile.html')">
+                    <span class="icon">👤</span> Profile
+                </button>
+            </div>
+        </div>
+
+        <div class="terminal-body">
+            <div class="terminal-output">
+                <h1 class="section-title">&gt; PROBLEM ARCHIVE</h1>
+
+                <div class="terminal-info">
+                    <p class="info-line">
+                        <span class="prompt">$</span> ls -la ~/problems/
+                    </p>
+                    <p class="info-line">
+                        <span class="success" id="problemCount">Loading problems...</span>
+                    </p>
+                </div>
+
+                <div class="folder-tree" id="folderTree"></div>
+            </div>
+        </div>
+
+        <div class="terminal-footer">
+            <div class="status-bar">
+                <span class="status-item">
+                    <span class="status-dot active"></span> ONLINE
+                </span>
+                <span class="status-item">
+                    USER: <span id="currentUser">Guest</span>
+                </span>
+                <span class="status-item">
+                    TIME: <span id="currentTime"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <script src="problemLoader.js"></script>
+    <script src="app.js"></script>
+    <script>
+        async function renderProblems() {
+            const folderTree = document.getElementById('folderTree');
+            folderTree.innerHTML = '<p class="info-line">Loading problems from filesystem...</p>';
+
+            try {
+                // Load problems dynamically
+                const problems = await getProblems();
+
+                folderTree.innerHTML = '';
+                let totalProblems = 0;
+
+                Object.keys(problems).forEach(topic => {
+                    const problemList = problems[topic];
+                    totalProblems += problemList.length;
+
+                    // Create folder item
+                    const folderItem = document.createElement('div');
+                    folderItem.className = 'folder-item';
+
+                    // Folder header
+                    const folderHeader = document.createElement('div');
+                    folderHeader.className = 'folder-header';
+                    folderHeader.innerHTML = `
+                        <span class="folder-icon">📁</span>
+                        <span class="folder-name">${topic}</span>
+                        <span class="folder-count">${problemList.length} problems</span>
+                    `;
+
+                    // Problem list (initially hidden)
+                    const problemListDiv = document.createElement('div');
+                    problemListDiv.className = 'problem-list';
+
+                    problemList.forEach(problem => {
+                        const problemItem = document.createElement('div');
+                        problemItem.className = 'problem-item';
+                        problemItem.onclick = () => openProblem(topic, problem.id);
+
+                        problemItem.innerHTML = `
+                            <span class="problem-difficulty ${getDifficultyClass(problem.difficulty)}">
+                                ${problem.difficulty.toUpperCase()}
+                            </span>
+                            <span class="problem-name">${problem.name}</span>
+                        `;
+
+                        problemListDiv.appendChild(problemItem);
+                    });
+
+                    // Toggle folder on click
+                    folderHeader.onclick = () => {
+                        problemListDiv.classList.toggle('expanded');
+                        const icon = folderHeader.querySelector('.folder-icon');
+                        icon.textContent = problemListDiv.classList.contains('expanded') ? '📂' : '📁';
+                    };
+
+                    folderItem.appendChild(folderHeader);
+                    folderItem.appendChild(problemListDiv);
+                    folderTree.appendChild(folderItem);
+                });
+
+                // Update count
+                const topicCount = Object.keys(problems).length;
+                document.getElementById('problemCount').textContent =
+                    `Found ${topicCount} topic directories with ${totalProblems} problems`;
+
+            } catch (error) {
+                console.error('Error loading problems:', error);
+                folderTree.innerHTML = '<p class="error">Failed to load problems. Check console for details.</p>';
+            }
+        }
+
+        function openProblem(topic, problemId) {
+            localStorage.setItem('currentTopic', topic);
+            localStorage.setItem('currentProblem', problemId);
+            window.location.href = 'solve.html';
+        }
+
+        function getDifficultyClass(difficulty) {
+            return `difficulty-${difficulty}`;
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+
+        // Initialize
+        window.addEventListener('load', async () => {
+            await renderProblems();
+            updateTime();
+            setInterval(updateTime, 1000);
+
+            const user = localStorage.getItem('username') || 'Guest';
+            document.getElementById('currentUser').textContent = user;
+        });
+    </script>
+</body>
+
+</html>

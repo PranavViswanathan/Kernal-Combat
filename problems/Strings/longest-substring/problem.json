@@ -1,0 +1,28 @@
+{
+    "id": "longest-substring",
+    "name": "Longest Substring Without Repeating Characters",
+    "difficulty": "medium",
+    "description": "Given a string s, find the length of the longest substring without repeating characters.",
+    "testCases": [
+        {
+            "input": "s = \"abcabcbb\"",
+            "output": "3",
+            "explanation": "The answer is \"abc\", with the length of 3."
+        },
+        {
+            "input": "s = \"bbbbb\"",
+            "output": "1",
+            "explanation": "The answer is \"b\", with the length of 1."
+        },
+        {
+            "input": "s = \"pwwkew\"",
+            "output": "3",
+            "explanation": "The answer is \"wke\", with the length of 3."
+        }
+    ],
+    "hints": [
+        "Use sliding window technique",
+        "Keep track of characters in current window using a Set"
+    ],
+    "starterCode": "function lengthOfLongestSubstring(s) {\n    // Your code here\n}"
+}

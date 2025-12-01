@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - CodeBattle Terminal</title>
+    <meta name="description" content="View your coding stats and achievements">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=VT323&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <span class="terminal-button close"></span>
+                <span class="terminal-button minimize"></span>
+                <span class="terminal-button maximize"></span>
+            </div>
+            <div class="terminal-title">
+                <span class="blink">█</span> User Profile
+            </div>
+            <div class="terminal-actions">
+                <button class="terminal-btn" onclick="navigateTo('index.html')">
+                    <span class="icon">🏠</span> Home
+                </button>
+                <button class="terminal-btn btn-danger" onclick="resetProfile()">
+                    <span class="icon">🔄</span> Reset
+                </button>
+            </div>
+        </div>
+
+        <div class="terminal-body">
+            <div class="profile-container">
+                <!-- Profile Header -->
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profileAvatar">👨‍💻</div>
+                    <div class="profile-info">
+                        <h1 id="profileUsername">Guest</h1>
+                        <p style="color: var(--terminal-text-dim); margin-bottom: 15px;">
+                            Rank: <span id="profileRank" style="color: var(--accent-primary);">Novice</span>
+                        </p>
+                        <button class="btn" onclick="editProfile()" style="padding: 8px 20px;">
+                            ✏️ Edit Profile
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <h2 class="section-title">&gt; STATISTICS</h2>
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <h3>Problems Solved</h3>
+                        <div class="value" id="statProblemsSolved">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Battles Won</h3>
+                        <div class="value" id="statBattlesWon">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Time</h3>
+                        <div class="value" id="statTotalTime" style="font-size: 24px;">0h 0m</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Win Rate</h3>
+                        <div class="value" id="statWinRate">0%</div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <h2 class="section-title">&gt; RECENT SOLUTIONS</h2>
+                <div class="editor-panel">
+                    <div class="panel-content" id="recentSolutions">
+                        <p class="info-line">
+                            <span class="prompt">$</span> No solutions yet. Start solving problems!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Achievements -->
+                <h2 class="section-title">&gt; ACHIEVEMENTS</h2>
+                <div class="menu-grid" id="achievementsList">
+                    <div class="menu-card">
+                        <div class="menu-icon">🏆</div>
+                        <h3>First Steps</h3>
+                        <p>Solve your first problem</p>
+                        <div class="menu-stats">
+                            <span class="stat" id="achievement1">🔒 Locked</span>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <div class="menu-icon">⚔️</div>
+                        <h3>Battle Master</h3>
+                        <p>Win your first battle</p>
+                        <div class="menu-stats">
+                            <span class="stat" id="achievement2">🔒 Locked</span>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <div class="menu-icon">🔥</div>
+                        <h3>Speed Demon</h3>
+                        <p>Solve 10 problems</p>
+                        <div class="menu-stats">
+                            <span class="stat" id="achievement3">🔒 Locked</span>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <div class="menu-icon">👑</div>
+                        <h3>Champion</h3>
+                        <p>Win 10 battles</p>
+                        <div class="menu-stats">
+                            <span class="stat" id="achievement4">🔒 Locked</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="terminal-footer">
+            <div class="status-bar">
+                <span class="status-item">
+                    <span class="status-dot active"></span> PROFILE
+                </span>
+                <span class="status-item">
+                    MEMBER SINCE: <span id="memberSince">2024</span>
+                </span>
+                <span class="status-item">
+                    TIME: <span id="currentTime"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal (simple prompt for now) -->
+    <script src="app.js"></script>
+    <script>
+        function loadProfile() {
+            const user = JSON.parse(localStorage.getItem('codebattle_user') || '{}');
+
+            // Set defaults
+            const username = user.username || 'Guest';
+            const avatar = user.avatar || '👨‍💻';
+            const problemsSolved = user.problemsSolved || 0;
+            const battlesWon = user.battlesWon || 0;
+            const totalTime = user.totalTime || 0;
+            const rank = calculateRank(problemsSolved, battlesWon);
+
+            // Update UI
+            document.getElementById('profileUsername').textContent = username;
+            document.getElementById('profileAvatar').textContent = avatar;
+            document.getElementById('profileRank').textContent = rank;
+            document.getElementById('statProblemsSolved').textContent = problemsSolved;
+            document.getElementById('statBattlesWon').textContent = battlesWon;
+
+            // Calculate total time from solutions
+            const solutions = JSON.parse(localStorage.getItem('solutions') || '{}');
+            const totalMs = Object.values(solutions).reduce((sum, sol) => sum + (sol.timeTaken || 0), 0);
+            const hours = Math.floor(totalMs / 3600000);
+            const minutes = Math.floor((totalMs % 3600000) / 60000);
+            document.getElementById('statTotalTime').textContent = `${hours}h ${minutes}m`;
+
+            // Win rate (assuming 2 battles per battle won)
+            const totalBattles = battlesWon * 2;
+            const winRate = totalBattles > 0 ? Math.floor((battlesWon / totalBattles) * 100) : 0;
+            document.getElementById('statWinRate').textContent = winRate + '%';
+
+            // Member since
+            const joined = user.joinedDate || new Date().getFullYear();
+            document.getElementById('memberSince').textContent = joined;
+
+            // Load recent solutions
+            loadRecentSolutions(solutions);
+
+            // Update achievements
+            updateAchievements(problemsSolved, battlesWon);
+
+            // Save username globally
+            localStorage.setItem('username', username);
+        }
+
+        function calculateRank(problems, battles) {
+            const score = problems * 10 + battles * 20;
+            if (score >= 500) return 'Legend';
+            if (score >= 300) return 'Master';
+            if (score >= 150) return 'Expert';
+            if (score >= 50) return 'Advanced';
+            if (score >= 10) return 'Intermediate';
+            return 'Novice';
+        }
+
+        function loadRecentSolutions(solutions) {
+            const container = document.getElementById('recentSolutions');
+
+            if (Object.keys(solutions).length === 0) {
+                return;
+            }
+
+            const solutionsArray = Object.entries(solutions)
+                .map(([id, data]) => ({ id, ...data }))
+                .sort((a, b) => b.timestamp - a.timestamp)
+                .slice(0, 5);
+
+            container.innerHTML = solutionsArray.map(sol => `
+                <div class="test-case" style="margin: 10px 0;">
+                    <div class="test-label">${sol.id}</div>
+                    <div style="display: flex; gap: 20px; margin-top: 8px; font-size: 12px;">
+                        <span>Score: <strong>${Math.floor(sol.score)}</strong></span>
+                        <span>Time: <strong>${formatTime(sol.timeTaken)}</strong></span>
+                        <span>Lines: <strong>${sol.metrics.lines}</strong></span>
+                        <span>Complexity: <strong>${sol.metrics.timeComplexity}</strong></span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateAchievements(problems, battles) {
+            const achievement1 = document.getElementById('achievement1');
+            const achievement2 = document.getElementById('achievement2');
+            const achievement3 = document.getElementById('achievement3');
+            const achievement4 = document.getElementById('achievement4');
+
+            if (problems >= 1) {
+                achievement1.textContent = '✅ Unlocked';
+                achievement1.style.color = 'var(--terminal-success)';
+            }
+            if (battles >= 1) {
+                achievement2.textContent = '✅ Unlocked';
+                achievement2.style.color = 'var(--terminal-success)';
+            }
+            if (problems >= 10) {
+                achievement3.textContent = '✅ Unlocked';
+                achievement3.style.color = 'var(--terminal-success)';
+            }
+            if (battles >= 10) {
+                achievement4.textContent = '✅ Unlocked';
+                achievement4.style.color = 'var(--terminal-success)';
+            }
+        }
+
+        function editProfile() {
+            const newUsername = prompt('Enter your username:',
+                document.getElementById('profileUsername').textContent);
+
+            if (newUsername && newUsername.trim()) {
+                const user = JSON.parse(localStorage.getItem('codebattle_user') || '{}');
+                user.username = newUsername.trim();
+
+                const avatars = ['👨‍💻', '👩‍💻', '🧑‍💻', '🦸', '🦹', '🥷', '🧙', '🧛'];
+                const avatarChoice = prompt('Choose avatar (0-7):\n' +
+                    avatars.map((a, i) => `${i}: ${a}`).join('\n'), '0');
+
+                if (avatarChoice !== null) {
+                    const idx = parseInt(avatarChoice) || 0;
+                    user.avatar = avatars[Math.min(idx, avatars.length - 1)];
+                }
+
+                if (!user.joinedDate) {
+                    user.joinedDate = new Date().getFullYear();
+                }
+
+                localStorage.setItem('codebattle_user', JSON.stringify(user));
+                loadProfile();
+            }
+        }
+
+        function resetProfile() {
+            if (confirm('Are you sure you want to reset your profile? This cannot be undone!')) {
+                localStorage.removeItem('codebattle_user');
+                localStorage.removeItem('solutions');
+                localStorage.removeItem('battleData');
+                alert('Profile reset!');
+                loadProfile();
+            }
+        }
+
+        function formatTime(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+
+            if (minutes > 0) {
+                return `${minutes}m ${remainingSeconds}s`;
+            }
+            return `${remainingSeconds}s`;
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+
+        window.addEventListener('load', () => {
+            loadProfile();
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+    </script>
+</body>
+
+</html>

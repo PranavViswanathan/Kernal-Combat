@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solve Problem - CodeBattle Terminal</title>
+    <meta name="description" content="Code editor for solving problems">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=VT323&display=swap"
+        rel="stylesheet">
+
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.css">
+
+    <style>
+        .CodeMirror {
+            height: 400px;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            background: var(--terminal-bg);
+            color: var(--terminal-text);
+            border: 1px solid var(--terminal-border);
+        }
+
+        .CodeMirror-gutters {
+            background: var(--terminal-bg-alt);
+            border-right: 1px solid var(--terminal-border);
+        }
+
+        .CodeMirror-linenumber {
+            color: var(--terminal-text-dim);
+        }
+
+        .CodeMirror-cursor {
+            border-left-color: var(--accent-primary);
+        }
+
+        .CodeMirror-selected {
+            background: rgba(0, 255, 65, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <span class="terminal-button close"></span>
+                <span class="terminal-button minimize"></span>
+                <span class="terminal-button maximize"></span>
+            </div>
+            <div class="terminal-title">
+                <span class="blink">█</span> <span id="problemTitle">Problem</span>
+            </div>
+            <div class="terminal-actions">
+                <button class="terminal-btn" onclick="navigateTo('problems.html')">
+                    <span class="icon">📁</span> Back
+                </button>
+                <button class="terminal-btn btn-primary" onclick="runCode()">
+                    <span class="icon">▶️</span> Run
+                </button>
+            </div>
+        </div>
+
+        <div class="terminal-body">
+            <div class="editor-container">
+                <!-- Problem Description -->
+                <div class="editor-panel">
+                    <div class="panel-header">📝 Problem Description</div>
+                    <div class="panel-content">
+                        <div id="problemDescription">
+                            <p>Loading problem...</p>
+                        </div>
+
+                        <h3 style="margin-top: 30px; margin-bottom: 15px; color: var(--terminal-text-bright);">
+                            Test Cases:
+                        </h3>
+                        <div id="testCases"></div>
+                    </div>
+                </div>
+
+                <!-- Code Editor -->
+                <div class="editor-panel">
+                    <div class="panel-header">
+                        💻 Code Editor
+                        <span style="margin-left: auto; font-size: 12px; color: var(--terminal-text-dim);">
+                            Time: <span id="timer">0:00</span>
+                        </span>
+                    </div>
+                    <div class="panel-content" style="padding: 0;">
+                        <div id="codeEditor"></div>
+                    </div>
+                    <div style="padding: 16px; border-top: 1px solid var(--terminal-border);">
+                        <button class="btn btn-primary" onclick="runCode()" style="width: 100%;">
+                            ▶️ Run Tests
+                        </button>
+                        <button class="btn" onclick="submitSolution()" style="width: 100%; margin-top: 10px;">
+                            ✅ Submit Solution
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="editor-panel mt-20">
+                <div class="panel-header">📊 Test Results</div>
+                <div class="panel-content" id="results">
+                    <p class="info-line">
+                        <span class="prompt">$</span> Run your code to see results...
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="terminal-footer">
+            <div class="status-bar">
+                <span class="status-item">
+                    <span class="status-dot active"></span> CODING
+                </span>
+                <span class="status-item">
+                    Lines: <span id="lineCount">0</span>
+                </span>
+                <span class="status-item">
+                    TIME: <span id="currentTime"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/javascript-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/selection/active-line.min.js"></script>
+
+    <script src="problemLoader.js"></script>
+    <script src="app.js"></script>
+    <script>
+        let currentProblem = null;
+        let startTime = Date.now();
+        let timerInterval = null;
+        let codeEditor = null;
+
+        async function loadProblem() {
+            const topic = localStorage.getItem('currentTopic');
+            const problemId = localStorage.getItem('currentProblem');
+
+            if (!topic || !problemId) {
+                window.location.href = 'problems.html';
+                return;
+            }
+
+            // Load problem dynamically
+            currentProblem = await getProblem(topic, problemId);
+
+            if (!currentProblem) {
+                alert('Problem not found!');
+                window.location.href = 'problems.html';
+                return;
+            }
+
+            // Set title
+            document.getElementById('problemTitle').textContent = currentProblem.name;
+
+            // Set description
+            document.getElementById('problemDescription').innerHTML = `
+                <h2 style="color: var(--terminal-text-bright); margin-bottom: 15px;">
+                    ${currentProblem.name}
+                </h2>
+                <span class="problem-difficulty ${getDifficultyClass(currentProblem.difficulty)}" 
+                      style="display: inline-block; margin-bottom: 15px;">
+                    ${currentProblem.difficulty.toUpperCase()}
+                </span>
+                <p style="line-height: 1.8;">${currentProblem.description}</p>
+                ${currentProblem.hints ? `
+                    <details style="margin-top: 20px;">
+                        <summary style="cursor: pointer; color: var(--accent-secondary);">💡 Hints</summary>
+                        <ul style="margin-top: 10px; padding-left: 20px;">
+                            ${currentProblem.hints.map(hint => `<li>${hint}</li>`).join('')}
+                        </ul>
+                    </details>
+                ` : ''}
+            `;
+
+            // Set test cases
+            const testCasesDiv = document.getElementById('testCases');
+            testCasesDiv.innerHTML = '';
+            currentProblem.testCases.forEach((tc, idx) => {
+                const testDiv = document.createElement('div');
+                testDiv.className = 'test-case';
+                testDiv.innerHTML = `
+                    <div class="test-label">Test Case ${idx + 1}:</div>
+                    <div><strong>Input:</strong> ${tc.input}</div>
+                    <div><strong>Expected Output:</strong> ${tc.output}</div>
+                    ${tc.explanation ? `<div style="margin-top: 5px; color: var(--terminal-text-dim);"><em>${tc.explanation}</em></div>` : ''}
+                `;
+                testCasesDiv.appendChild(testDiv);
+            });
+
+            // Initialize CodeMirror
+            initializeCodeEditor();
+        }
+
+        function initializeCodeEditor() {
+            const editorDiv = document.getElementById('codeEditor');
+
+            // Load saved code or use starter code
+            const savedCode = localStorage.getItem(`code_${currentProblem.id}`);
+            const initialCode = savedCode || currentProblem.starterCode || '// Write your solution here\n\nfunction solution() {\n    // Your code here\n}';
+
+            codeEditor = CodeMirror(editorDiv, {
+                value: initialCode,
+                mode: 'javascript',
+                theme: 'dracula',
+                lineNumbers: true,
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                indentUnit: 4,
+                indentWithTabs: false,
+                lineWrapping: true,
+                styleActiveLine: true,
+                extraKeys: {
+                    'Ctrl-Space': 'autocomplete',
+                    'Cmd-Space': 'autocomplete'
+                }
+            });
+
+            // Auto-save code on change
+            codeEditor.on('change', () => {
+                localStorage.setItem(`code_${currentProblem.id}`, codeEditor.getValue());
+                updateLineCount();
+            });
+
+            // Initial line count
+            updateLineCount();
+        }
+
+        function runCode() {
+            if (!codeEditor) return;
+
+            const code = codeEditor.getValue();
+            const resultsDiv = document.getElementById('results');
+
+            // Save code
+            localStorage.setItem(`code_${currentProblem.id}`, code);
+
+            // Simulate test execution
+            resultsDiv.innerHTML = '<p class="info-line"><span class="prompt">$</span> Running tests...</p>';
+
+            setTimeout(() => {
+                const passed = Math.random() > 0.3; // Simulate pass/fail
+                const metrics = calculateComplexity(code);
+
+                resultsDiv.innerHTML = `
+                    <div class="test-case ${passed ? 'passed' : 'failed'}">
+                        <div class="test-label">${passed ? '✅ All Tests Passed!' : '❌ Some Tests Failed'}</div>
+                        <div class="test-result">
+                            <div><strong>Time Complexity:</strong> ${metrics.timeComplexity}</div>
+                            <div><strong>Space Complexity:</strong> ${metrics.spaceComplexity}</div>
+                            <div><strong>Lines of Code:</strong> ${metrics.lines}</div>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        function submitSolution() {
+            if (!codeEditor) return;
+
+            const code = codeEditor.getValue();
+
+            if (!code.trim()) {
+                alert('Please write some code first!');
+                return;
+            }
+
+            const timeTaken = Date.now() - startTime;
+            const metrics = calculateComplexity(code);
+            const score = calculateScore(metrics, timeTaken);
+
+            // Save solution
+            const solutions = JSON.parse(localStorage.getItem('solutions') || '{}');
+            solutions[currentProblem.id] = {
+                code,
+                metrics,
+                timeTaken,
+                score,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('solutions', JSON.stringify(solutions));
+
+            // Update user stats
+            const user = JSON.parse(localStorage.getItem('codebattle_user') || '{"problemsSolved": 0}');
+            user.problemsSolved = (user.problemsSolved || 0) + 1;
+            localStorage.setItem('codebattle_user', JSON.stringify(user));
+
+            alert(`Solution submitted! Score: ${Math.floor(score)}`);
+            window.location.href = 'problems.html';
+        }
+
+        function updateTimer() {
+            const elapsed = Date.now() - startTime;
+            const seconds = Math.floor(elapsed / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            document.getElementById('timer').textContent =
+                `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateLineCount() {
+            if (!codeEditor) return;
+            const lines = codeEditor.lineCount();
+            document.getElementById('lineCount').textContent = lines;
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+
+        // Initialize
+        window.addEventListener('load', async () => {
+            await loadProblem();
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+    </script>
+</body>
+
+</html>

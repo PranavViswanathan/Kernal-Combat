@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeBattle Terminal - LeetCode Style Platform</title>
+    <meta name="description" content="Terminal-themed coding platform with Pokemon-style battles">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=VT323&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="terminal-container">
+        <!-- Terminal Header -->
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <span class="terminal-button close"></span>
+                <span class="terminal-button minimize"></span>
+                <span class="terminal-button maximize"></span>
+            </div>
+            <div class="terminal-title">
+                <span class="blink">█</span> CodeBattle Terminal v1.0.0
+            </div>
+            <div class="terminal-actions">
+                <button class="terminal-btn" onclick="navigateTo('profile.html')">
+                    <span class="icon">👤</span> Profile
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="terminal-body">
+            <div class="terminal-output">
+                <div class="boot-sequence" id="bootSequence">
+                    <p class="boot-line">$ Initializing CodeBattle Terminal...</p>
+                    <p class="boot-line">> Loading core modules... <span class="success">[OK]</span></p>
+                    <p class="boot-line">> Establishing connection... <span class="success">[OK]</span></p>
+                    <p class="boot-line">> System ready. Welcome, Coder!</p>
+                    <p class="boot-line prompt">$ _</p>
+                </div>
+
+                <!-- Main Menu -->
+                <div class="main-menu" id="mainMenu" style="display: none;">
+                    <div class="ascii-art">
+                        <pre>
+  ____          _      ____        _   _   _      
+ / ___|___   __| | ___| __ )  __ _| |_| |_| | ___ 
+| |   / _ \ / _` |/ _ \  _ \ / _` | __| __| |/ _ \
+| |__| (_) | (_| |  __/ |_) | (_| | |_| |_| |  __/
+ \____\___/ \__,_|\___|____/ \__,_|\__|\__|_|\___|
+                                                    
+                    Terminal Edition
+                        </pre>
+                    </div>
+
+                    <div class="menu-options">
+                        <h2 class="section-title">&gt; MAIN MENU</h2>
+
+                        <div class="menu-grid">
+                            <div class="menu-card" onclick="navigateTo('problems.html')">
+                                <div class="menu-icon">📁</div>
+                                <h3>Problem Archive</h3>
+                                <p>Browse coding challenges by topic</p>
+                                <div class="menu-stats">
+                                    <span class="stat">150+ Problems</span>
+                                    <span class="stat">15 Topics</span>
+                                </div>
+                            </div>
+
+                            <div class="menu-card" onclick="navigateTo('solo-mode.html')">
+                                <div class="menu-icon">⚡</div>
+                                <h3>Solo Practice</h3>
+                                <p>Sharpen your skills alone</p>
+                                <div class="menu-stats">
+                                    <span class="stat">Timed Mode</span>
+                                    <span class="stat">Test Cases</span>
+                                </div>
+                            </div>
+
+                            <div class="menu-card highlight" onclick="navigateTo('pair-mode.html')">
+                                <div class="menu-icon">⚔️</div>
+                                <h3>Pair Battle Mode</h3>
+                                <p>Challenge another coder to battle!</p>
+                                <div class="menu-stats">
+                                    <span class="stat-highlight">2 Players</span>
+                                    <span class="stat-highlight">Epic Battles</span>
+                                </div>
+                            </div>
+
+                            <div class="menu-card" onclick="navigateTo('profile.html')">
+                                <div class="menu-icon">👤</div>
+                                <h3>User Profile</h3>
+                                <p>View stats and achievements</p>
+                                <div class="menu-stats">
+                                    <span class="stat">Rankings</span>
+                                    <span class="stat">History</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="terminal-info">
+                            <p class="info-line">
+                                <span class="prompt">$</span> Type 'help' for available commands
+                            </p>
+                            <p class="info-line">
+                                <span class="prompt">$</span> Current directory: ~/codebattle/
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terminal Footer -->
+        <div class="terminal-footer">
+            <div class="status-bar">
+                <span class="status-item">
+                    <span class="status-dot active"></span> ONLINE
+                </span>
+                <span class="status-item">
+                    USER: <span id="currentUser">Guest</span>
+                </span>
+                <span class="status-item">
+                    TIME: <span id="currentTime"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Boot sequence animation
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('bootSequence').style.display = 'none';
+                document.getElementById('mainMenu').style.display = 'block';
+            }, 2000);
+
+            // Update time
+            updateTime();
+            setInterval(updateTime, 1000);
+
+            // Load user
+            const user = localStorage.getItem('username') || 'Guest';
+            document.getElementById('currentUser').textContent = user;
+        });
+
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+    </script>
+</body>
+
+</html>

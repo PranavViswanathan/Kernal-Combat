@@ -1,0 +1,21 @@
+{
+    "id": "valid-anagram",
+    "name": "Valid Anagram",
+    "difficulty": "easy",
+    "description": "Given two strings s and t, return true if t is an anagram of s, and false otherwise. An Anagram is a word or phrase formed by rearranging the letters of a different word or phrase, typically using all the original letters exactly once.",
+    "testCases": [
+        {
+            "input": "s = \"anagram\", t = \"nagaram\"",
+            "output": "true"
+        },
+        {
+            "input": "s = \"rat\", t = \"car\"",
+            "output": "false"
+        }
+    ],
+    "hints": [
+        "Count the frequency of each character",
+        "Compare the character frequencies of both strings"
+    ],
+    "starterCode": "function isAnagram(s, t) {\n    // Your code here\n}"
+}
