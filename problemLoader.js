@@ -22,6 +22,7 @@ const PROBLEM_INDEX = {
 // Cache for loaded problems
 let PROBLEMS_CACHE = {};
 let LOADING_COMPLETE = false;
+let activeLoadPromise = null;
 
 /**
  * Load all problems from the file system
@@ -31,7 +32,12 @@ async function loadAllProblems() {
         return PROBLEMS_CACHE;
     }
 
-    try {
+    if (activeLoadPromise) {
+        return activeLoadPromise;
+    }
+
+    activeLoadPromise = (async () => {
+        try {
         const loadPromises = [];
         
         for (const [topic, problemIds] of Object.entries(PROBLEM_INDEX)) {
@@ -64,6 +70,9 @@ async function loadAllProblems() {
         // Fallback to hardcoded data if loading fails
         return getFallbackProblems();
     }
+    })();
+
+    return activeLoadPromise;
 }
 
 /**
