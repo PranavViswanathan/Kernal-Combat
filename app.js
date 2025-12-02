@@ -14,7 +14,7 @@ const APP_STATE = {
 };
 
 // Initialize problems data
-const PROBLEMS_DATA = {
+const STATIC_PROBLEMS = {
     'Arrays': [
         {
             id: 'two-sum',
@@ -357,14 +357,19 @@ function getDifficultyClass(difficulty) {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
-    APP_STATE.problems = PROBLEMS_DATA;
+    // Use dynamically loaded problems if available, otherwise fallback to static
+    if (typeof PROBLEMS_DATA !== 'undefined' && Object.keys(PROBLEMS_DATA).length > 0) {
+        APP_STATE.problems = PROBLEMS_DATA;
+    } else {
+        APP_STATE.problems = STATIC_PROBLEMS;
+    }
 });
 
 // Export for use in other pages
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         APP_STATE,
-        PROBLEMS_DATA,
+        PROBLEMS_DATA: STATIC_PROBLEMS,
         calculateComplexity,
         calculateScore,
         simulateBattle,
