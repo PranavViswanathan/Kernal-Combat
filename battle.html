@@ -277,11 +277,15 @@
                             const damage = parseInt(damageMatch[1]);
 
                             // Check which player attacked by matching player names
-                            if (message.includes(battleResult.player1Name + ' attacks')) {
+                            // Use names from battleData to ensure accuracy
+                            const p1Name = battleResult.player1Name || 'Player 1';
+                            const p2Name = battleResult.player2Name || 'Player 2';
+
+                            if (message.includes(p1Name + ' attacks')) {
                                 // Player 1 attacked, damage player 2
                                 currentP2HP = Math.max(0, currentP2HP - damage);
                                 addDamageAnimation('p2Sprite');
-                            } else if (message.includes(battleResult.player2Name + ' attacks')) {
+                            } else if (message.includes(p2Name + ' attacks')) {
                                 // Player 2 attacked, damage player 1  
                                 currentP1HP = Math.max(0, currentP1HP - damage);
                                 addDamageAnimation('p1Sprite');

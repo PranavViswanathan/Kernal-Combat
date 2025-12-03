@@ -266,6 +266,44 @@ function simulateBattle(player1Data, player2Data) {
     let currentP1HP = p1Stats.hp;
     let currentP2HP = p2Stats.hp;
     
+    // Check for tie based on score
+    if (Math.abs(player1Data.score - player2Data.score) < 1) {
+        // It's a tie - simulate a close battle that ends in a draw
+        while (currentP1HP > 0 && currentP2HP > 0 && turn <= 10) {
+            battleLog.push(`--- Turn ${turn} ---`);
+            
+            // Both deal damage
+            const damage = 100;
+            currentP2HP -= damage;
+            battleLog.push(`${player1Data.name} attacks! Deals ${damage} damage!`);
+            
+            currentP1HP -= damage;
+            battleLog.push(`${player2Data.name} attacks! Deals ${damage} damage!`);
+            
+            battleLog.push('');
+            turn++;
+        }
+        
+        // Force both to 0 for dramatic effect
+        currentP1HP = 0;
+        currentP2HP = 0;
+        
+        battleLog.push(`Both players are exhausted!`);
+        battleLog.push('');
+        battleLog.push(`🤝 IT'S A TIE!`);
+        
+        return {
+            winner: 'TIE',
+            battleLog,
+            p1FinalHP: 0,
+            p2FinalHP: 0,
+            p1MaxHP: p1Stats.hp,
+            p2MaxHP: p2Stats.hp,
+            player1Name: player1Data.name,
+            player2Name: player2Data.name
+        };
+    }
+
     while (currentP1HP > 0 && currentP2HP > 0 && turn <= 10) {
         battleLog.push(`--- Turn ${turn} ---`);
         
