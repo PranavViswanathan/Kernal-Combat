@@ -1,7 +1,3 @@
-// ===================================
-// GLOBAL DATA & STATE
-// ===================================
-
 const APP_STATE = {
     currentUser: {
         username: 'Guest',
@@ -13,7 +9,6 @@ const APP_STATE = {
     problems: {}
 };
 
-// Initialize problems data
 const STATIC_PROBLEMS = {
     'Arrays': [
         {
@@ -181,10 +176,6 @@ const STATIC_PROBLEMS = {
     ]
 };
 
-// ===================================
-// LOCAL STORAGE UTILITIES
-// ===================================
-
 function loadUserData() {
     const savedUser = localStorage.getItem('kernalcombat_user');
     if (savedUser) {
@@ -195,10 +186,6 @@ function loadUserData() {
 function saveUserData() {
     localStorage.setItem('kernalcombat_user', JSON.stringify(APP_STATE.currentUser));
 }
-
-// ===================================
-// PERFORMANCE METRICS
-// ===================================
 
 function calculateComplexity(code) {
     const lines = code.split('\n').filter(line => line.trim() !== '');
@@ -223,30 +210,35 @@ function calculateComplexity(code) {
     return { timeComplexity, spaceComplexity, lines: lines.length };
 }
 
-function calculateScore(metrics, timeTaken) {
+function calculateScore(metrics, timeTaken, passRate = 1.0) {
     let score = 1000;
     
-    // Time penalty
+    // Base score reduction for time
     score -= Math.min(timeTaken / 1000, 500);
     
-    // Lines of code penalty
+    // Penalty for long code
     score -= metrics.lines * 2;
     
-    // Complexity bonus/penalty
+    // Bonus for time complexity
     if (metrics.timeComplexity === 'O(1)') score += 200;
     else if (metrics.timeComplexity === 'O(n)') score += 100;
     else if (metrics.timeComplexity === 'O(n log n)') score += 50;
     else if (metrics.timeComplexity === 'O(n²)') score -= 100;
     
+    // Bonus for space complexity
     if (metrics.spaceComplexity === 'O(1)') score += 100;
     else if (metrics.spaceComplexity === 'O(n)') score += 50;
     
-    return Math.max(score, 100);
+    // CRITICAL: Test case pass rate multiplier
+    score = score * passRate;
+    
+    // If no tests passed, severe penalty
+    if (passRate === 0) {
+        score = 50;
+    }
+    
+    return Math.max(score, 50);
 }
-
-// ===================================
-// BATTLE SYSTEM
-// ===================================
 
 function simulateBattle(player1Data, player2Data) {
     const battleLog = [];
@@ -254,7 +246,6 @@ function simulateBattle(player1Data, player2Data) {
     battleLog.push('⚔️ BATTLE START!');
     battleLog.push('');
     
-    // Calculate initial stats
     const p1Stats = {
         hp: 1000,
         attack: Math.floor(player1Data.score / 10),
@@ -278,7 +269,6 @@ function simulateBattle(player1Data, player2Data) {
     while (currentP1HP > 0 && currentP2HP > 0 && turn <= 10) {
         battleLog.push(`--- Turn ${turn} ---`);
         
-        // Player 1 attacks
         const p1Damage = Math.max(p1Stats.attack - p2Stats.defense, 10);
         currentP2HP -= p1Damage;
         battleLog.push(`${player1Data.name} attacks! Deals ${p1Damage} damage!`);
@@ -288,7 +278,6 @@ function simulateBattle(player1Data, player2Data) {
             break;
         }
         
-        // Player 2 attacks
         const p2Damage = Math.max(p2Stats.attack - p1Stats.defense, 10);
         currentP1HP -= p2Damage;
         battleLog.push(`${player2Data.name} attacks! Deals ${p2Damage} damage!`);
@@ -302,9 +291,15 @@ function simulateBattle(player1Data, player2Data) {
         turn++;
     }
     
-    const winner = currentP1HP > currentP2HP ? player1Data.name : player2Data.name;
+    const winner = currentP1HP > currentP2HP ? player1Data.name : 
+                   currentP2HP > currentP1HP ? player2Data.name : 
+                   'TIE';
     battleLog.push('');
-    battleLog.push(`🏆 ${winner} WINS!`);
+    if (winner === 'TIE') {
+        battleLog.push(`🤝 IT'S A TIE!`);
+    } else {
+        battleLog.push(`🏆 ${winner} WINS!`);
+    }
     
     return {
         winner,
@@ -312,16 +307,13 @@ function simulateBattle(player1Data, player2Data) {
         p1FinalHP: Math.max(currentP1HP, 0),
         p2FinalHP: Math.max(currentP2HP, 0),
         p1MaxHP: p1Stats.hp,
-        p2MaxHP: p2Stats.hp
+        p2MaxHP: p2Stats.hp,
+        player1Name: player1Data.name,
+        player2Name: player2Data.name
     };
 }
 
-// ===================================
-// SPRITE GENERATION
-// ===================================
-
 function generatePlayerSprite(playerName, isWinner) {
-    // Simple ASCII/emoji representation
     const sprites = {
         winner: ['🦖', '🐉', '🦅', '🦁', '🐯'],
         loser: ['🐢', '🐌', '🐛', '🐁', '🐰']
@@ -331,10 +323,6 @@ function generatePlayerSprite(playerName, isWinner) {
     const hash = playerName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return list[hash % list.length];
 }
-
-// ===================================
-// UTILITY FUNCTIONS
-// ===================================
 
 function formatTime(ms) {
     const seconds = Math.floor(ms / 1000);
@@ -351,13 +339,125 @@ function getDifficultyClass(difficulty) {
     return `difficulty-${difficulty}`;
 }
 
-// ===================================
-// INITIALIZE APP
-// ===================================
+// Code validation functions
+function parseTestInput(input) {
+    // Parse test case input string like "nums = [2,7,11,15], target = 9"
+    const args = [];
+    
+    // Use regex to match "key = value" patterns, handling arrays and objects correctly
+    const pattern = /(\w+)\s*=\s*(\[[^\]]*\]|\{[^\}]*\}|"[^"]*"|'[^']*'|-?\d+\.?\d*|\w+)/g;
+    let match;
+    
+    while ((match = pattern.exec(input)) !== null) {
+        const value = match[2].trim();
+        try {
+            // Try to parse as JSON first
+            args.push(JSON.parse(value));
+        } catch (e) {
+            // If not valid JSON, check if it's a number
+            const numValue = Number(value);
+            if (!isNaN(numValue)) {
+                args.push(numValue);
+            } else {
+                // Use as string
+                args.push(value);
+            }
+        }
+    }
+    
+    return args;
+}
+
+function runTestCases(code, problem) {
+    const results = {
+        passed: 0,
+        failed: 0,
+        total: problem.testCases.length,
+        details: []
+    };
+    
+    try {
+        // Extract function name from code
+        const functionMatch = code.match(/function\s+(\w+)/);
+        if (!functionMatch) {
+            throw new Error('No function found in code');
+        }
+        const functionName = functionMatch[1];
+        
+        // Create function from code
+        eval(code);
+        const userFunction = eval(functionName);
+        
+        // Run each test case
+        problem.testCases.forEach((testCase, index) => {
+            try {
+                const args = parseTestInput(testCase.input);
+                const result = userFunction(...args);
+                const expected = testCase.output;
+                
+                // Compare result with expected
+                let passed = false;
+                try {
+                    const expectedValue = JSON.parse(expected);
+                    passed = JSON.stringify(result) === JSON.stringify(expectedValue);
+                } catch (e) {
+                    passed = String(result) === String(expected);
+                }
+                
+                if (passed) {
+                    results.passed++;
+                    results.details.push({
+                        testCase: index + 1,
+                        passed: true,
+                        input: testCase.input,
+                        expected: expected,
+                        actual: JSON.stringify(result)
+                    });
+                } else {
+                    results.failed++;
+                    results.details.push({
+                        testCase: index + 1,
+                        passed: false,
+                        input: testCase.input,
+                        expected: expected,
+                        actual: JSON.stringify(result)
+                    });
+                }
+            } catch (error) {
+                results.failed++;
+                results.details.push({
+                    testCase: index + 1,
+                    passed: false,
+                    input: testCase.input,
+                    error: error.message
+                });
+            }
+        });
+    } catch (error) {
+        results.error = error.message;
+    }
+    
+    return results;
+}
+
+function validateSolution(code, problem) {
+    const testResults = runTestCases(code, problem);
+    const passRate = testResults.total > 0 ? testResults.passed / testResults.total : 0;
+    
+    return {
+        isValid: testResults.passed === testResults.total,
+        passRate: passRate,
+        testResults: testResults
+    };
+}
+
+function generateRoomId() {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
-    // Use dynamically loaded problems if available, otherwise fallback to static
     if (typeof PROBLEMS_DATA !== 'undefined' && Object.keys(PROBLEMS_DATA).length > 0) {
         APP_STATE.problems = PROBLEMS_DATA;
     } else {
@@ -365,7 +465,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Export for use in other pages
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         APP_STATE,
@@ -379,7 +478,6 @@ if (typeof module !== 'undefined' && module.exports) {
         loadUserData
     };
 } else {
-    // Make functions globally available in browser
     window.calculateComplexity = calculateComplexity;
     window.calculateScore = calculateScore;
     window.simulateBattle = simulateBattle;
@@ -387,4 +485,8 @@ if (typeof module !== 'undefined' && module.exports) {
     window.formatTime = formatTime;
     window.saveUserData = saveUserData;
     window.loadUserData = loadUserData;
+    window.parseTestInput = parseTestInput;
+    window.runTestCases = runTestCases;
+    window.validateSolution = validateSolution;
+    window.generateRoomId = generateRoomId;
 }

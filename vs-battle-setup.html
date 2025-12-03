@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VS Battle Setup - Kernal Combat Terminal</title>
+    <meta name="description" content="Create a versus battle with shareable links">
+    <link rel="icon" type="image/jpeg" href="favicon.jpg">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=VT323&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <span class="terminal-button close"></span>
+                <span class="terminal-button minimize"></span>
+                <span class="terminal-button maximize"></span>
+            </div>
+            <div class="terminal-title">
+                <span class="blink">█</span> VS Battle Setup 🔗
+            </div>
+            <div class="terminal-actions">
+                <button class="terminal-btn" onclick="navigateTo('index.html')">
+                    <span class="icon">🏠</span> Home
+                </button>
+            </div>
+        </div>
+
+        <div class="terminal-body">
+            <!-- Setup Screen -->
+            <div id="setupScreen">
+                <h1 class="section-title">&gt; CREATE BATTLE ROOM</h1>
+
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <div class="editor-panel mb-20">
+                        <div class="panel-header">👥 Player Names</div>
+                        <div class="panel-content">
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; color: var(--terminal-text-dim);">
+                                    Player 1 Name:
+                                </label>
+                                <input type="text" id="player1Name" placeholder="Enter player 1 name..." style="width: 100%; padding: 10px; background: var(--terminal-bg); 
+                                              border: 1px solid var(--terminal-border); color: var(--terminal-text); 
+                                              font-family: var(--font-mono); border-radius: 4px;">
+                            </div>
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; color: var(--terminal-text-dim);">
+                                    Player 2 Name:
+                                </label>
+                                <input type="text" id="player2Name" placeholder="Enter player 2 name..." style="width: 100%; padding: 10px; background: var(--terminal-bg); 
+                                              border: 1px solid var(--terminal-border); color: var(--terminal-text); 
+                                              font-family: var(--font-mono); border-radius: 4px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="editor-panel">
+                        <div class="panel-header">📝 Select Problem</div>
+                        <div class="panel-content">
+                            <select id="problemSelect" style="width: 100%; padding: 10px; background: var(--terminal-bg); 
+                                           border: 1px solid var(--terminal-border); color: var(--terminal-text); 
+                                           font-family: var(--font-mono); border-radius: 4px;">
+                                <option value="">-- Select a problem --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="createBattleRoom()"
+                        style="width: 100%; margin-top: 20px; padding: 15px; font-size: 16px;">
+                        🔗 CREATE BATTLE ROOM
+                    </button>
+                </div>
+            </div>
+
+            <!-- Links Screen -->
+            <div id="linksScreen" style="display: none;">
+                <h1 class="section-title">&gt; BATTLE ROOM CREATED</h1>
+
+                <div style="max-width: 800px; margin: 0 auto;">
+                    <div class="editor-panel mb-20">
+                        <div class="panel-header">🎮 Room ID: <span id="roomIdDisplay"></span></div>
+                        <div class="panel-content">
+                            <p style="color: var(--terminal-text-dim); margin-bottom: 20px;">
+                                Share these links with each player. They will code independently and battle when both
+                                submit!
+                            </p>
+
+                            <div style="margin-bottom: 25px;">
+                                <label
+                                    style="display: block; margin-bottom: 8px; color: var(--accent-success); font-weight: 600;">
+                                    🔵 Player 1 Link (<span id="p1NameLabel"></span>):
+                                </label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" id="player1Link" readonly style="flex: 1; padding: 10px; background: var(--terminal-bg); 
+                                                  border: 1px solid var(--terminal-border); color: var(--terminal-text); 
+                                                  font-family: var(--font-mono); border-radius: 4px; font-size: 12px;">
+                                    <button class="btn" onclick="copyLink('player1Link')" style="padding: 10px 20px;">
+                                        📋 Copy
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 25px;">
+                                <label
+                                    style="display: block; margin-bottom: 8px; color: var(--accent-warning); font-weight: 600;">
+                                    🔴 Player 2 Link (<span id="p2NameLabel"></span>):
+                                </label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" id="player2Link" readonly style="flex: 1; padding: 10px; background: var(--terminal-bg); 
+                                                  border: 1px solid var(--terminal-border); color: var(--terminal-text); 
+                                                  font-family: var(--font-mono); border-radius: 4px; font-size: 12px;">
+                                    <button class="btn" onclick="copyLink('player2Link')" style="padding: 10px 20px;">
+                                        📋 Copy
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div
+                                style="padding: 15px; background: var(--terminal-bg-lighter); border-radius: 4px; border-left: 4px solid var(--accent-info);">
+                                <p style="margin: 0; color: var(--terminal-text-dim);">
+                                    💡 <strong>Tip:</strong> Both players must submit their code for the battle to
+                                    begin.
+                                    The battle results will show automatically when both are done!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <button class="btn btn-primary" onclick="openPlayer1Link()"
+                            style="padding: 12px 30px; margin-right: 10px;">
+                            🔵 Open Player 1 Session
+                        </button>
+                        <button class="btn btn-primary" onclick="openPlayer2Link()"
+                            style="padding: 12px 30px; margin-right: 10px;">
+                            🔴 Open Player 2 Session
+                        </button>
+                        <button class="btn" onclick="resetSetup()" style="padding: 12px 30px;">
+                            🔄 New Battle
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="terminal-footer">
+            <div class="status-bar">
+                <span class="status-item">
+                    <span class="status-dot active"></span> VS BATTLE SETUP
+                </span>
+                <span class="status-item">
+                    STATUS: <span id="setupStatus">Ready</span>
+                </span>
+                <span class="status-item">
+                    TIME: <span id="currentTime"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <script src="problemLoader.js"></script>
+    <script src="app.js"></script>
+    <script>
+        async function populateProblemSelect() {
+            const select = document.getElementById('problemSelect');
+            const problems = await getProblems();
+
+            Object.keys(problems).forEach(topic => {
+                problems[topic].forEach(problem => {
+                    const option = document.createElement('option');
+                    option.value = JSON.stringify({ topic, problem });
+                    option.textContent = `${topic} - ${problem.name} (${problem.difficulty})`;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        function createBattleRoom() {
+            const p1Name = document.getElementById('player1Name').value.trim();
+            const p2Name = document.getElementById('player2Name').value.trim();
+            const problemData = document.getElementById('problemSelect').value;
+
+            if (!p1Name || !p2Name) {
+                alert('Please enter names for both players!');
+                return;
+            }
+
+            if (!problemData) {
+                alert('Please select a problem!');
+                return;
+            }
+
+            const { topic, problem } = JSON.parse(problemData);
+
+            // Generate unique room ID
+            const roomId = generateRoomId();
+
+            // Store room data in localStorage
+            const roomData = {
+                roomId: roomId,
+                player1: { name: p1Name, submitted: false },
+                player2: { name: p2Name, submitted: false },
+                problem: problem,
+                topic: topic,
+                createdAt: Date.now()
+            };
+
+            localStorage.setItem(`battleRoom_${roomId}`, JSON.stringify(roomData));
+
+            // Generate links
+            const baseUrl = window.location.origin + window.location.pathname.replace('vs-battle-setup.html', '');
+            const p1Link = `${baseUrl}vs-battle-session.html?room=${roomId}&player=1`;
+            const p2Link = `${baseUrl}vs-battle-session.html?room=${roomId}&player=2`;
+
+            // Display links
+            document.getElementById('roomIdDisplay').textContent = roomId;
+            document.getElementById('p1NameLabel').textContent = p1Name;
+            document.getElementById('p2NameLabel').textContent = p2Name;
+            document.getElementById('player1Link').value = p1Link;
+            document.getElementById('player2Link').value = p2Link;
+
+            // Switch screens
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('linksScreen').style.display = 'block';
+            document.getElementById('setupStatus').textContent = 'Battle Room Created';
+        }
+
+        function copyLink(inputId) {
+            const input = document.getElementById(inputId);
+            input.select();
+            document.execCommand('copy');
+            alert('Link copied to clipboard!');
+        }
+
+        function openPlayer1Link() {
+            const link = document.getElementById('player1Link').value;
+            window.open(link, '_blank');
+        }
+
+        function openPlayer2Link() {
+            const link = document.getElementById('player2Link').value;
+            window.open(link, '_blank');
+        }
+
+        function resetSetup() {
+            document.getElementById('player1Name').value = '';
+            document.getElementById('player2Name').value = '';
+            document.getElementById('problemSelect').value = '';
+            document.getElementById('setupScreen').style.display = 'block';
+            document.getElementById('linksScreen').style.display = 'none';
+            document.getElementById('setupStatus').textContent = 'Ready';
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+
+        window.addEventListener('load', async () => {
+            await populateProblemSelect();
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle Session - Kernal Combat Terminal</title>
+    <meta name="description" content="Individual player battle session">
+    <link rel="icon" type="image/jpeg" href="favicon.jpg">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=VT323&display=swap"
+        rel="stylesheet">
+
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+
+    <style>
+        .CodeMirror {
+            height: 400px;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            background: var(--terminal-bg);
+            color: var(--terminal-text);
+            border: 1px solid var(--terminal-border);
+        }
+
+        .CodeMirror-gutters {
+            background: var(--terminal-bg-alt);
+            border-right: 1px solid var(--terminal-border);
+        }
+
+        .CodeMirror-linenumber {
+            color: var(--terminal-text-dim);
+        }
+
+        .CodeMirror-cursor {
+            border-left-color: var(--accent-primary);
+        }
+
+        .CodeMirror-selected {
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        /* Custom confirm modal */
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .confirm-modal.active {
+            display: flex;
+        }
+
+        .confirm-content {
+            background: var(--terminal-bg);
+            border: 2px solid var(--accent-primary);
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 500px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        }
+
+        .confirm-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <span class="terminal-button close"></span>
+                <span class="terminal-button minimize"></span>
+                <span class="terminal-button maximize"></span>
+            </div>
+            <div class="terminal-title">
+                <span class="blink">█</span> Battle Session ⚔️
+            </div>
+        </div>
+
+        <div class="terminal-body">
+            <!-- Loading Screen -->
+            <div id="loadingScreen">
+                <div style="text-align: center; padding: 50px;">
+                    <h2 style="color: var(--terminal-text-bright);">Loading Battle...</h2>
+                    <p style="color: var(--terminal-text-dim);">Please wait...</p>
+                </div>
+            </div>
+
+            <!-- Session Screen -->
+            <div id="sessionScreen" style="display: none;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h1 class="section-title" id="playerTitle">PLAYER SESSION</h1>
+                    <p style="color: var(--terminal-text-dim);" id="problemNameDisplay">Problem</p>
+                    <div style="margin-top: 10px;">
+                        <span
+                            style="padding: 6px 12px; background: var(--terminal-bg-lighter); border-radius: 4px; color: var(--accent-warning); font-weight: 600;">
+                            ⏱️ Time: <span id="playerTimer">0:00</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div style="max-width: 1200px; margin: 0 auto;">
+                    <!-- Code Editor -->
+                    <div class="editor-panel mb-20">
+                        <div class="panel-header">
+                            💻 Your Code Editor
+                            <span style="margin-left: auto; font-size: 12px;">
+                                Lines: <span id="lineCount">0</span>
+                            </span>
+                        </div>
+                        <div class="panel-content" style="padding: 0;">
+                            <div id="codeEditor"></div>
+                        </div>
+                        <div style="padding: 16px; border-top: 1px solid var(--terminal-border);">
+                            <button class="btn btn-primary" onclick="submitCode()"
+                                style="width: 100%; padding: 15px; font-size: 16px;">
+                                ✅ SUBMIT CODE
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Problem Description -->
+                    <div class="editor-panel">
+                        <div class="panel-header">📝 Problem Description</div>
+                        <div class="panel-content" id="problemDescription"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Waiting Screen -->
+            <div id="waitingScreen" style="display: none;">
+                <div style="text-align: center; padding: 50px;">
+                    <h2 style="color: var(--accent-success);">✅ Code Submitted!</h2>
+                    <p style="color: var(--terminal-text-dim); font-size: 18px; margin-top: 20px;">
+                        Waiting for opponent to submit...
+                    </p>
+                    <div style="margin-top: 30px;">
+                        <div class="loader" style="margin: 0 auto;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="terminal-footer">
+            <div class="status-bar">
+                <span class="status-item">
+                    <span class="status-dot active"></span> BATTLE SESSION
+                </span>
+                <span class="status-item">
+                    ROOM: <span id="roomIdDisplay">---</span>
+                </span>
+                <span class="status-item">
+                    STATUS: <span id="sessionStatus">Loading...</span>
+                </span>
+                <span class="status-item">
+                    TIME: <span id="currentTime"></span>
+                </span>
+            </div>
+
+            <!-- Custom Confirm Modal -->
+            <div id="confirmModal" class="confirm-modal">
+                <div class="confirm-content">
+                    <h3 style="color: var(--accent-warning); margin-bottom: 15px;">⚠️ Confirm Submission</h3>
+                    <p style="color: var(--terminal-text); line-height: 1.6;">Are you sure you want to submit? You
+                        cannot change your code after submission.</p>
+                    <div class="confirm-buttons">
+                        <button class="btn btn-primary" onclick="confirmSubmit()" style="flex: 1; padding: 12px;">✅ Yes,
+                            Submit</button>
+                        <button class="btn" onclick="cancelSubmit()" style="flex: 1; padding: 12px;">❌ Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .loader {
+            border: 4px solid var(--terminal-border);
+            border-top: 4px solid var(--accent-success);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/selection/active-line.min.js"></script>
+
+    <script src="problemLoader.js"></script>
+    <script src="app.js"></script>
+    <script>
+        let sessionData = {
+            roomId: null,
+            playerNum: null,
+            roomData: null,
+            startTime: 0,
+            timerInterval: null,
+            codeEditor: null
+        };
+
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                room: params.get('room'),
+                player: params.get('player')
+            };
+        }
+
+        async function loadSession() {
+            const params = getUrlParams();
+
+            if (!params.room || !params.player) {
+                alert('Invalid session link!');
+                window.location.href = 'vs-battle-setup.html';
+                return;
+            }
+
+            sessionData.roomId = params.room;
+            sessionData.playerNum = parseInt(params.player);
+
+            // Load room data
+            const roomKey = `battleRoom_${sessionData.roomId}`;
+            const roomDataStr = localStorage.getItem(roomKey);
+
+            if (!roomDataStr) {
+                alert('Battle room not found!');
+                window.location.href = 'vs-battle-setup.html';
+                return;
+            }
+
+            sessionData.roomData = JSON.parse(roomDataStr);
+
+            // Check if already submitted
+            const playerKey = `player${sessionData.playerNum}`;
+            if (sessionData.roomData[playerKey].submitted) {
+                showWaitingScreen();
+                startCheckingForOpponent();
+                return;
+            }
+
+            // Load problem data
+            const problem = sessionData.roomData.problem;
+
+            // Set up UI
+            const playerName = sessionData.roomData[playerKey].name;
+            document.getElementById('playerTitle').textContent = `⚔️ ${playerName}'s Battle Session`;
+            document.getElementById('problemNameDisplay').textContent = problem.name;
+            document.getElementById('roomIdDisplay').textContent = sessionData.roomId;
+
+            // Initialize CodeMirror with starter code
+            const starterCode = problem.starterCode?.javascript || `// Write your solution for ${problem.name}\n`;
+            initializeCodeEditor(starterCode);
+
+            // Display problem
+            displayProblem(problem);
+
+            // Show session screen
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('sessionScreen').style.display = 'block';
+            document.getElementById('sessionStatus').textContent = 'Coding...';
+
+            // Start timer
+            sessionData.startTime = Date.now();
+            sessionData.timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function initializeCodeEditor(starterCode) {
+            const editorDiv = document.getElementById('codeEditor');
+
+            sessionData.codeEditor = CodeMirror(editorDiv, {
+                value: starterCode,
+                mode: 'javascript',
+                theme: 'dracula',
+                lineNumbers: true,
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                indentUnit: 4,
+                indentWithTabs: false,
+                lineWrapping: true,
+                styleActiveLine: true
+            });
+
+            // Update line count on change
+            sessionData.codeEditor.on('change', updateLineCount);
+            updateLineCount();
+        }
+
+        function displayProblem(problem) {
+            const descDiv = document.getElementById('problemDescription');
+            descDiv.innerHTML = `
+                <h3 style="color: var(--terminal-text-bright); margin-bottom: 10px;">${problem.name}</h3>
+                <span class="problem-difficulty ${getDifficultyClass(problem.difficulty)}">${problem.difficulty.toUpperCase()}</span>
+                <p style="margin-top: 15px; line-height: 1.8;">${problem.description}</p>
+                <h4 style="margin-top: 20px; color: var(--terminal-text-bright);">Test Cases:</h4>
+                ${problem.testCases.map((tc, idx) => `
+                    <div class="test-case" style="margin: 10px 0; padding: 10px; background: var(--terminal-bg-lighter); border-radius: 4px;">
+                        <div class="test-label">Test ${idx + 1}:</div>
+                        <div>Input: ${tc.input}</div>
+                        <div>Expected Output: ${tc.output}</div>
+                        ${tc.explanation ? `<div style="color: var(--terminal-text-dim); margin-top: 5px;">Explanation: ${tc.explanation}</div>` : ''}
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function updateLineCount() {
+            if (!sessionData.codeEditor) return;
+            const lines = sessionData.codeEditor.lineCount();
+            document.getElementById('lineCount').textContent = lines;
+        }
+
+        function updateTimer() {
+            const elapsed = Date.now() - sessionData.startTime;
+            const seconds = Math.floor(elapsed / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            document.getElementById('playerTimer').textContent =
+                `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function submitCode() {
+            if (!sessionData.codeEditor) return;
+
+            const code = sessionData.codeEditor.getValue().trim();
+
+            if (!code || code === sessionData.roomData.problem.starterCode?.javascript) {
+                alert('Please write some code before submitting!');
+                return;
+            }
+
+            // Show custom confirm modal
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function confirmSubmit() {
+            // Hide modal
+            document.getElementById('confirmModal').classList.remove('active');
+
+            const code = sessionData.codeEditor.getValue().trim();
+
+            // Stop timer
+            clearInterval(sessionData.timerInterval);
+            const timeTaken = Date.now() - sessionData.startTime;
+
+            // Validate code
+            const validation = validateSolution(code, sessionData.roomData.problem);
+            const metrics = calculateComplexity(code);
+            const score = calculateScore(metrics, timeTaken, validation.passRate);
+
+            // Store submission
+            const playerKey = `player${sessionData.playerNum}`;
+            sessionData.roomData[playerKey] = {
+                name: sessionData.roomData[playerKey].name,
+                code: code,
+                submitted: true,
+                timeTaken: timeTaken,
+                metrics: metrics,
+                score: score,
+                validation: validation,
+                submittedAt: Date.now()
+            };
+
+            // Save to localStorage
+            const roomKey = `battleRoom_${sessionData.roomId}`;
+            localStorage.setItem(roomKey, JSON.stringify(sessionData.roomData));
+
+            // Check if both submitted
+            if (sessionData.roomData.player1.submitted && sessionData.roomData.player2.submitted) {
+                // Both submitted - go to battle
+                navigateToBattle();
+            } else {
+                // Show waiting screen
+                showWaitingScreen();
+                startCheckingForOpponent();
+            }
+        }
+
+        function cancelSubmit() {
+            // Hide modal
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        function showWaitingScreen() {
+            document.getElementById('sessionScreen').style.display = 'none';
+            document.getElementById('waitingScreen').style.display = 'block';
+            document.getElementById('sessionStatus').textContent = 'Waiting...';
+        }
+
+        function startCheckingForOpponent() {
+            // Check every 2 seconds if opponent submitted
+            const checkInterval = setInterval(() => {
+                const roomKey = `battleRoom_${sessionData.roomId}`;
+                const roomDataStr = localStorage.getItem(roomKey);
+
+                if (roomDataStr) {
+                    const roomData = JSON.parse(roomDataStr);
+                    if (roomData.player1.submitted && roomData.player2.submitted) {
+                        clearInterval(checkInterval);
+                        sessionData.roomData = roomData;
+                        navigateToBattle();
+                    }
+                }
+            }, 2000);
+        }
+
+        function navigateToBattle() {
+            // Store battle data
+            localStorage.setItem('battleData', JSON.stringify({
+                player1: sessionData.roomData.player1,
+                player2: sessionData.roomData.player2,
+                problem: sessionData.roomData.problem
+            }));
+
+            // Navigate to battle page
+            setTimeout(() => {
+                window.location.href = 'battle.html';
+            }, 1000);
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+
+        window.addEventListener('load', async () => {
+            await loadSession();
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+    </script>
+</body>
+
+</html>

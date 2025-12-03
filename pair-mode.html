@@ -207,6 +207,11 @@
             document.getElementById('p2Header').textContent = p2Name;
             document.getElementById('problemNameDisplay').textContent = problem.name;
 
+            // Load starter code into editors
+            const starterCode = problem.starterCode?.javascript || `// Write your solution for ${problem.name}\n`;
+            document.getElementById('p1Editor').value = starterCode;
+            document.getElementById('p2Editor').value = starterCode;
+
             // Show problem description
             const descDiv = document.getElementById('battleProblemDesc');
             descDiv.innerHTML = `
@@ -245,6 +250,14 @@
                 const lines = document.getElementById('p2Editor').value.split('\n').length;
                 document.getElementById('p2Lines').textContent = lines;
             });
+
+            // Initial line count
+            updateLineCount();
+        }
+
+        function updateLineCount() {
+            document.getElementById('p1Lines').textContent = document.getElementById('p1Editor').value.split('\n').length;
+            document.getElementById('p2Lines').textContent = document.getElementById('p2Editor').value.split('\n').length;
         }
 
         function updatePlayerTimer(player) {
@@ -302,14 +315,16 @@
 
         function checkBothSubmitted() {
             if (battleState.player1.submitted && battleState.player2.submitted) {
-                // Calculate metrics for both players
+                // Validate and calculate metrics for both players
+                const p1Validation = validateSolution(battleState.player1.code, battleState.problem);
                 const p1Metrics = calculateComplexity(battleState.player1.code);
                 const p1Time = battleState.player1.endTime - battleState.player1.startTime;
-                const p1Score = calculateScore(p1Metrics, p1Time);
+                const p1Score = calculateScore(p1Metrics, p1Time, p1Validation.passRate);
 
+                const p2Validation = validateSolution(battleState.player2.code, battleState.problem);
                 const p2Metrics = calculateComplexity(battleState.player2.code);
                 const p2Time = battleState.player2.endTime - battleState.player2.startTime;
-                const p2Score = calculateScore(p2Metrics, p2Time);
+                const p2Score = calculateScore(p2Metrics, p2Time, p2Validation.passRate);
 
                 // Store battle data
                 localStorage.setItem('battleData', JSON.stringify({
@@ -317,14 +332,17 @@
                         name: battleState.player1.name,
                         metrics: p1Metrics,
                         score: p1Score,
-                        timeTaken: p1Time
+                        timeTaken: p1Time,
+                        validation: p1Validation
                     },
                     player2: {
                         name: battleState.player2.name,
                         metrics: p2Metrics,
                         score: p2Score,
-                        timeTaken: p2Time
-                    }
+                        timeTaken: p2Time,
+                        validation: p2Validation
+                    },
+                    problem: battleState.problem
                 }));
 
                 // Navigate to battle page

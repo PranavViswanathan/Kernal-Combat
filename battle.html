@@ -10,6 +10,35 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=VT323&display=swap"
         rel="stylesheet">
+    <style>
+        .damage-shake {
+            animation: shake 0.5s;
+            filter: brightness(1.5) hue-rotate(30deg);
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translateX(-10px);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translateX(10px);
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -52,6 +81,10 @@
                                 <div class="stat-value" id="p1Score">0</div>
                             </div>
                             <div class="stat-bar">
+                                <div class="stat-name">Tests Passed</div>
+                                <div class="stat-value" id="p1TestsPassed">0/0</div>
+                            </div>
+                            <div class="stat-bar">
                                 <div class="stat-name">Time Complexity</div>
                                 <div class="stat-value" id="p1TimeComp">O(n)</div>
                             </div>
@@ -91,6 +124,10 @@
                             <div class="stat-bar">
                                 <div class="stat-name">Score</div>
                                 <div class="stat-value" id="p2Score">0</div>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-name">Tests Passed</div>
+                                <div class="stat-value" id="p2TestsPassed">0/0</div>
                             </div>
                             <div class="stat-bar">
                                 <div class="stat-name">Time Complexity</div>
@@ -171,11 +208,29 @@
             document.getElementById('p1Lines').textContent = data.player1.metrics.lines;
             document.getElementById('p1Time').textContent = formatTime(data.player1.timeTaken);
 
+            // Set test results with color coding
+            if (data.player1.validation) {
+                const p1TestEl = document.getElementById('p1TestsPassed');
+                const p1Passed = data.player1.validation.testResults.passed;
+                const p1Total = data.player1.validation.testResults.total;
+                p1TestEl.textContent = `${p1Passed}/${p1Total}`;
+                p1TestEl.style.color = p1Passed === p1Total ? 'var(--accent-success)' : 'var(--accent-error)';
+            }
+
             document.getElementById('p2Score').textContent = Math.floor(data.player2.score);
             document.getElementById('p2TimeComp').textContent = data.player2.metrics.timeComplexity;
             document.getElementById('p2SpaceComp').textContent = data.player2.metrics.spaceComplexity;
             document.getElementById('p2Lines').textContent = data.player2.metrics.lines;
             document.getElementById('p2Time').textContent = formatTime(data.player2.timeTaken);
+
+            // Set test results with color coding
+            if (data.player2.validation) {
+                const p2TestEl = document.getElementById('p2TestsPassed');
+                const p2Passed = data.player2.validation.testResults.passed;
+                const p2Total = data.player2.validation.testResults.total;
+                p2TestEl.textContent = `${p2Passed}/${p2Total}`;
+                p2TestEl.style.color = p2Passed === p2Total ? 'var(--accent-success)' : 'var(--accent-error)';
+            }
 
             // Run battle simulation
             battleResult = simulateBattle(data.player1, data.player2);
@@ -199,6 +254,10 @@
             let messageIndex = 0;
             const messages = battleResult.battleLog;
 
+            // Track current HP during animation
+            let currentP1HP = battleResult.p1MaxHP;
+            let currentP2HP = battleResult.p2MaxHP;
+
             function showNextMessage() {
                 if (messageIndex < messages.length) {
                     const messageDiv = document.createElement('div');
@@ -209,37 +268,55 @@
                     // Scroll to bottom
                     battleLog.scrollTop = battleLog.scrollHeight;
 
-                    // Update health bars based on message content
-                    if (messages[messageIndex].includes('attacks')) {
-                        updateHealthBars();
+                    // Check for attack messages and update HP
+                    const message = messages[messageIndex];
+                    if (message.includes('attacks') && message.includes('Deals')) {
+                        // Extract damage from message like "Player 1 attacks! Deals 50 damage!"
+                        const damageMatch = message.match(/Deals (\d+) damage/);
+                        if (damageMatch) {
+                            const damage = parseInt(damageMatch[1]);
+
+                            // Check which player attacked by matching player names
+                            if (message.includes(battleResult.player1Name + ' attacks')) {
+                                // Player 1 attacked, damage player 2
+                                currentP2HP = Math.max(0, currentP2HP - damage);
+                                addDamageAnimation('p2Sprite');
+                            } else if (message.includes(battleResult.player2Name + ' attacks')) {
+                                // Player 2 attacked, damage player 1  
+                                currentP1HP = Math.max(0, currentP1HP - damage);
+                                addDamageAnimation('p1Sprite');
+                            }
+
+                            updateHealthBars(currentP1HP, currentP2HP, false);
+                        }
                     }
 
                     messageIndex++;
                     setTimeout(showNextMessage, 800);
                 } else {
                     // Battle finished - show final health
-                    updateHealthBars(true);
+                    updateHealthBars(battleResult.p1FinalHP, battleResult.p2FinalHP, true);
                 }
             }
 
             setTimeout(showNextMessage, 500);
         }
 
-        function updateHealthBars(final = false) {
+        function updateHealthBars(p1HP, p2HP, final = false) {
             if (!battleResult) return;
 
-            const p1Percent = final ? (battleResult.p1FinalHP / battleResult.p1MaxHP) * 100 : Math.random() * 30 + 50;
-            const p2Percent = final ? (battleResult.p2FinalHP / battleResult.p2MaxHP) * 100 : Math.random() * 30 + 50;
+            const p1Percent = (p1HP / battleResult.p1MaxHP) * 100;
+            const p2Percent = (p2HP / battleResult.p2MaxHP) * 100;
+
+            document.getElementById('p1HealthFill').style.width = Math.max(0, p1Percent) + '%';
+            document.getElementById('p1HealthText').textContent =
+                `${Math.max(0, p1HP)}/${battleResult.p1MaxHP}`;
+
+            document.getElementById('p2HealthFill').style.width = Math.max(0, p2Percent) + '%';
+            document.getElementById('p2HealthText').textContent =
+                `${Math.max(0, p2HP)}/${battleResult.p2MaxHP}`;
 
             if (final) {
-                document.getElementById('p1HealthFill').style.width = p1Percent + '%';
-                document.getElementById('p1HealthText').textContent =
-                    `${battleResult.p1FinalHP}/${battleResult.p1MaxHP}`;
-
-                document.getElementById('p2HealthFill').style.width = p2Percent + '%';
-                document.getElementById('p2HealthText').textContent =
-                    `${battleResult.p2FinalHP}/${battleResult.p2MaxHP}`;
-
                 // Apply glitch effect to loser
                 const loserSprite = battleResult.winner === document.getElementById('p1Name').textContent ?
                     'p2Sprite' : 'p1Sprite';
@@ -248,6 +325,14 @@
                 // Update user stats if winner
                 updateWinnerStats();
             }
+        }
+
+        function addDamageAnimation(spriteId) {
+            const sprite = document.getElementById(spriteId);
+            sprite.classList.add('damage-shake');
+            setTimeout(() => {
+                sprite.classList.remove('damage-shake');
+            }, 500);
         }
 
         function updateWinnerStats() {
