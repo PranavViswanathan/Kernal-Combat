@@ -2,6 +2,8 @@
 
 A terminal-themed LeetCode-style coding platform with Pokemon-style battles! Built with vanilla HTML, CSS, and JavaScript.
 
+![Website Image](https://github.com/PranavViswanathan/Kernal-Combat/blob/main/KernalCombatImage.png)
+
 ## Features
 
 - **Terminal-Themed UI** - Retro terminal aesthetics with green glow effects  
