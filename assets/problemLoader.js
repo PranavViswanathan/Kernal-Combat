@@ -79,7 +79,7 @@ async function loadAllProblems() {
  * Load a single problem file
  */
 async function loadProblemFile(topic, problemId) {
-    const path = `problems/${encodeURIComponent(topic)}/${problemId}/problem.json`;
+    const path = `../problems/${encodeURIComponent(topic)}/${problemId}/problem.json`;
     
     try {
         const response = await fetch(path);
