@@ -8,7 +8,7 @@ A terminal-themed LeetCode-style coding platform with Pokemon-style battles! Bui
 
 - **Terminal-Themed UI** - Retro terminal aesthetics with green glow effects.
 - **Dynamic Problem Loading** - Questions loaded from JSON files in folder structure.
-- **Code Editor** - Professional code editing with CodeMirror (syntax highlighting & autocomplete)  
+- **Code Editor** - Professional code editing with CodeMirror (syntax highlighting & autocomplete).
 - **Solo Practice Mode** - Solve problems individually with test cases  
 - **Pair Battle Mode** - 2-player competitive coding  
 - **Pokemon-Style Battles** - Automated battles based on code quality metrics  
