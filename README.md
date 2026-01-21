@@ -21,16 +21,16 @@ A terminal-themed LeetCode-style coding platform with Pokemon-style battles! Bui
 
 ```
 VsLeetcodeCodingWebsite/
-├── index.html              # Landing page
-├── problems.html           # Browse problems by topic
-├── solve.html              # Solo problem solver
-├── pair-mode.html          # Pair programming setup
-├── battle.html             # Pokemon-style battle animation
-├── profile.html            # User stats and achievements
-├── styles.css              # Terminal-themed styling
-├── app.js                  # Core application logic
-├── problemLoader.js        # Dynamic problem loading system
-└── problems/               # Problem directory
+├── index.html              # Landing page.
+├── problems.html           # Browse problems by topic.
+├── solve.html              # Solo problem solver.
+├── pair-mode.html          # Pair programming setup.
+├── battle.html             # Pokemon-style battle animation.
+├── profile.html            # User stats and achievements.
+├── styles.css              # Terminal-themed styling.
+├── app.js                  # Core application logic.
+├── problemLoader.js        # Dynamic problem loading system.
+└── problems/               # Problem directory.
     ├── Arrays/
     │   ├── two-sum/
     │   │   └── problem.json
